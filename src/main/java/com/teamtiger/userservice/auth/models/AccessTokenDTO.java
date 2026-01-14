@@ -1,0 +1,10 @@
+package com.teamtiger.userservice.auth.models;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class AccessTokenDTO {
+    private String accessToken;
+}
