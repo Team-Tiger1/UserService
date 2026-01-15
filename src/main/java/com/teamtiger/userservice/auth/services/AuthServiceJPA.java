@@ -2,9 +2,9 @@ package com.teamtiger.userservice.auth.services;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.models.AccessTokenDTO;
+import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +23,7 @@ public class AuthServiceJPA implements AuthService{
         //Check username existence against DB
         boolean doesUsernameExist = userRepository.existsByUsername(username);
         if(!doesUsernameExist) {
-            throw new UsernameNotFoundException("Username not found");
+            throw new UserNotFoundException();
         }
 
         //Generate new access token

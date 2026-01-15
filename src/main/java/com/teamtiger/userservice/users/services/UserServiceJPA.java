@@ -3,6 +3,7 @@ package com.teamtiger.userservice.users.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.users.entities.User;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
+import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
 import com.teamtiger.userservice.users.models.CreateUserDTO;
 import com.teamtiger.userservice.users.models.CreatedUserDTO;
@@ -10,7 +11,6 @@ import com.teamtiger.userservice.users.models.LoginDTO;
 import com.teamtiger.userservice.users.models.UserDTO;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +61,7 @@ public class UserServiceJPA implements UserService {
 
         //Check if username matches record in DB
         User user = userRepository.findByUsername(loginDTO.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         //Check if password matches hashed version
         boolean doesPasswordMatch = PasswordHasher.matches(loginDTO.getPassword(), user.getPassword());

@@ -14,7 +14,7 @@ import java.util.Date;
 public class JwtTokenUtil {
 
     // Load secret from environment variables
-    @Value("${jwt.secret}")
+    @Value("${JWT_SECRET}")
     private String key;
 
     // Access token expires in 15 minutes

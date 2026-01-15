@@ -1,6 +1,7 @@
 package com.teamtiger.userservice.users.controllers;
 
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
+import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
 import com.teamtiger.userservice.users.models.CreateUserDTO;
 import com.teamtiger.userservice.users.models.CreatedUserDTO;
@@ -10,7 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +46,7 @@ public class UserController {
             return ResponseEntity.ok(createdUserDTO);
         }
 
-        catch (UsernameNotFoundException e) {
+        catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
 
