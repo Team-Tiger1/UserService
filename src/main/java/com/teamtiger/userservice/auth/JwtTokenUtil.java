@@ -1,5 +1,6 @@
 package com.teamtiger.userservice.auth;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenUtil {
@@ -38,13 +40,16 @@ public class JwtTokenUtil {
     }
 
 
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(String username, String userType) {
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("type", userType);
+
         return Jwts.builder()
-                .setSubject(username)
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
@@ -53,12 +58,23 @@ public class JwtTokenUtil {
 
 
     public String getUsernameFromToken(String token) {
+        return getClaimsFromToken(token).getSubject();
+    }
+
+    public String getRoleFromToken(String token) {
+        return (String) getClaimsFromToken(token).get("type");
+    }
+
+    private Claims getClaimsFromToken(String token) {
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
+
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(hmacKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
     }
+
 
 }

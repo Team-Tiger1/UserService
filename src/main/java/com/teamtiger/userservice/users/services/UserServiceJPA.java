@@ -40,7 +40,7 @@ public class UserServiceJPA implements UserService {
         User savedUser = userRepository.save(user);
 
         //Get Refresh Token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getUsername());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getUsername(), "USER");
 
 
         CreatedUserDTO createdUserDTO = CreatedUserDTO.builder()
@@ -67,7 +67,7 @@ public class UserServiceJPA implements UserService {
         }
 
         //Generate new refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getUsername());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getUsername(), "USER");
 
         return CreatedUserDTO.builder()
                 .refreshToken(refreshToken)
@@ -112,7 +112,7 @@ public class UserServiceJPA implements UserService {
         if(updateUserDTO.getUsername() != null) {
             user.setUsername(updateUserDTO.getUsername());
 
-            refreshToken = jwtTokenUtil.generateRefreshToken(updateUserDTO.getUsername());
+            refreshToken = jwtTokenUtil.generateRefreshToken(updateUserDTO.getUsername(), "USER");
         }
 
         User savedUser = userRepository.save(user);
