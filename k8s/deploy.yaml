@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: ghcr.io/YOUR_GITHUB_USERNAME/user-service:latest
+          image: ghcr.io/team-tiger1/userservice:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
