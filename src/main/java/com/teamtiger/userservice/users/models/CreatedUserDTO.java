@@ -2,6 +2,7 @@ package com.teamtiger.userservice.users.models;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.UUID;
 

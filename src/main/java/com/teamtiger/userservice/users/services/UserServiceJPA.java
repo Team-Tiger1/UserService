@@ -5,10 +5,7 @@ import com.teamtiger.userservice.users.entities.User;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
-import com.teamtiger.userservice.users.models.CreateUserDTO;
-import com.teamtiger.userservice.users.models.CreatedUserDTO;
-import com.teamtiger.userservice.users.models.LoginDTO;
-import com.teamtiger.userservice.users.models.UserDTO;
+import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -89,6 +86,44 @@ public class UserServiceJPA implements UserService {
         return UserMapper.toDTO(savedUser);
     }
 
+    @Override
+    public CreatedUserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
+
+        String username = jwtTokenUtil.getUsernameFromToken(accessToken);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+
+        //If there are not new values return user entity
+        if(updateUserDTO.getUsername() == null && updateUserDTO.getEmail() == null) {
+            return CreatedUserDTO.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .build();
+        }
+
+        //Update email
+        if(updateUserDTO.getEmail() != null) {
+            user.setEmail(updateUserDTO.getEmail());
+        }
+
+        //Update username and issue new refresh token
+        String refreshToken = null;
+        if(updateUserDTO.getUsername() != null) {
+            user.setUsername(updateUserDTO.getUsername());
+
+            refreshToken = jwtTokenUtil.generateRefreshToken(updateUserDTO.getUsername());
+        }
+
+        User savedUser = userRepository.save(user);
+        return CreatedUserDTO.builder()
+                .id(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .refreshToken(refreshToken)
+                .build();
+    }
+
     private static class UserMapper {
         public static UserDTO toDTO(User entity) {
             if (entity == null) return null;
@@ -108,6 +143,7 @@ public class UserServiceJPA implements UserService {
                     .build();
         }
     }
+
 
     public static class PasswordHasher {
         private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();

@@ -1,9 +1,6 @@
 package com.teamtiger.userservice.users.services;
 
-import com.teamtiger.userservice.users.models.CreateUserDTO;
-import com.teamtiger.userservice.users.models.CreatedUserDTO;
-import com.teamtiger.userservice.users.models.LoginDTO;
-import com.teamtiger.userservice.users.models.UserDTO;
+import com.teamtiger.userservice.users.models.*;
 
 public interface UserService {
 
@@ -12,5 +9,7 @@ public interface UserService {
     CreatedUserDTO userLogin(LoginDTO loginDTO);
 
     UserDTO getUserProfile(String accessToken);
+
+    CreatedUserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO);
 
 }

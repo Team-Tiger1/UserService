@@ -4,10 +4,7 @@ import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
-import com.teamtiger.userservice.users.models.CreateUserDTO;
-import com.teamtiger.userservice.users.models.CreatedUserDTO;
-import com.teamtiger.userservice.users.models.LoginDTO;
-import com.teamtiger.userservice.users.models.UserDTO;
+import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.services.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -108,6 +105,57 @@ public class UserController {
 
             UserDTO userDTO = userService.getUserProfile(accessToken);
             return ResponseEntity.ok(userDTO);
+        }
+
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> updateUserProfile(@NotBlank @RequestHeader("Authorization") String authHeader,
+                                               @Valid @RequestBody UpdateUserDTO updateUserDTO) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+
+            CreatedUserDTO createdUserDTO = userService.updateUserProfile(accessToken, updateUserDTO);
+
+            //If username has changed then issue new refresh token to match
+            if(createdUserDTO.getRefreshToken() == null) {
+                UserDTO userDTO = UserDTO.builder()
+                        .id(createdUserDTO.getId())
+                        .username(createdUserDTO.getUsername())
+                        .email(createdUserDTO.getEmail())
+                        .build();
+                return ResponseEntity.ok(userDTO);
+            }
+
+            //Create the Cookie
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", createdUserDTO.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("Strict")
+                    .path("/api/auth/refresh")
+                    .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
+                    .build();
+
+            //Remove the refresh token from response body
+            UserDTO userDTO = UserDTO.builder()
+                    .id(createdUserDTO.getId())
+                    .email(createdUserDTO.getEmail())
+                    .username(createdUserDTO.getUsername())
+                    .build();
+
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .body(userDTO);
+
+
         }
 
         catch (UserNotFoundException e) {
