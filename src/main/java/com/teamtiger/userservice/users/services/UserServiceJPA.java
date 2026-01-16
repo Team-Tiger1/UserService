@@ -79,6 +79,16 @@ public class UserServiceJPA implements UserService {
                 .build();
     }
 
+    @Override
+    public UserDTO getUserProfile(String accessToken) {
+        String username = jwtTokenUtil.getUsernameFromToken(accessToken);
+
+        User savedUser = userRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+
+        return UserMapper.toDTO(savedUser);
+    }
+
     private static class UserMapper {
         public static UserDTO toDTO(User entity) {
             if (entity == null) return null;

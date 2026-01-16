@@ -11,4 +11,6 @@ public interface UserService {
 
     CreatedUserDTO userLogin(LoginDTO loginDTO);
 
+    UserDTO getUserProfile(String accessToken);
+
 }

@@ -18,10 +18,10 @@ public class JwtTokenUtil {
     private String key;
 
     // Access token expires in 15 minutes
-    private final long accessTokenExpirationMs = 15 * 60 * 1000;
+    private static final long ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000;
 
     // Refresh token expires in 7 days
-    private final long refreshTokenExpirationMs = 7 * 24 * 60 * 60 * 1000;
+    public static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
 
 
     public String generateAccessToken(String username) {
@@ -32,7 +32,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
                 .compact();
     }
@@ -46,7 +46,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
                 .compact();
     }
