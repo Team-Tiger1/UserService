@@ -1,9 +1,18 @@
 package com.teamtiger.userservice.vendors.controllers;
 
+import com.teamtiger.userservice.auth.JwtTokenUtil;
+import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
+import com.teamtiger.userservice.vendors.models.CreateVendorDTO;
+import com.teamtiger.userservice.vendors.models.VendorRegisterDTO;
 import com.teamtiger.userservice.vendors.services.VendorService;
-import lombok.Getter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,11 +23,37 @@ public class VendorController {
 
     private final VendorService vendorService;
 
-    @GetMapping
-    public String test() {
-        return "Hello World";
-    }
 
+    @PostMapping("/register")
+    public ResponseEntity<?> registerVendor(@Valid @RequestBody CreateVendorDTO createVendorDTO) {
+        try {
+
+            VendorRegisterDTO vendorRegisterDTO = vendorService.createVendor(createVendorDTO);
+
+            //Create the Cookie
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", vendorRegisterDTO.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("Strict")
+                    .path("/api/auth/refresh")
+                    .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .body(vendorRegisterDTO.getVendorDTO());
+
+        }
+
+        catch (CompanyNameTakenException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 
 
 

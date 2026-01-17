@@ -25,10 +25,10 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
         try {
-            CreatedUserDTO createdUserDTO = userService.createUser(createUserDTO);
+            UserRegisterDTO userRegisterDTO = userService.createUser(createUserDTO);
 
             //Create the Cookie
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", createdUserDTO.getRefreshToken())
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
                     .secure(true)
                     .sameSite("Strict")
@@ -36,17 +36,10 @@ public class UserController {
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
 
-            //Remove the refresh token from response body
-            UserDTO userDTO = UserDTO.builder()
-                    .id(createdUserDTO.getId())
-                    .email(createdUserDTO.getEmail())
-                    .username(createdUserDTO.getUsername())
-                    .build();
-
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                    .body(userDTO);
+                    .body(userRegisterDTO.getUserDTO());
         }
 
         catch (UsernameAlreadyTakenException e) {
@@ -61,10 +54,10 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO) {
         try {
-            CreatedUserDTO createdUserDTO = userService.userLogin(loginDTO);
+            UserRegisterDTO userRegisterDTO = userService.userLogin(loginDTO);
 
             //Create the Cookie
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", createdUserDTO.getRefreshToken())
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
                     .secure(true)
                     .sameSite("Strict")
@@ -72,17 +65,10 @@ public class UserController {
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
 
-            //Remove the refresh token from response body
-            UserDTO userDTO = UserDTO.builder()
-                    .id(createdUserDTO.getId())
-                    .email(createdUserDTO.getEmail())
-                    .username(createdUserDTO.getUsername())
-                    .build();
-
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                    .body(userDTO);
+                    .body(userRegisterDTO.getUserDTO());
         }
 
         catch (UserNotFoundException e) {
@@ -122,20 +108,15 @@ public class UserController {
         try {
             String accessToken = authHeader.replace("Bearer ", "");
 
-            CreatedUserDTO createdUserDTO = userService.updateUserProfile(accessToken, updateUserDTO);
+            UserRegisterDTO userRegisterDTO = userService.updateUserProfile(accessToken, updateUserDTO);
 
             //If username has changed then issue new refresh token to match
-            if(createdUserDTO.getRefreshToken() == null) {
-                UserDTO userDTO = UserDTO.builder()
-                        .id(createdUserDTO.getId())
-                        .username(createdUserDTO.getUsername())
-                        .email(createdUserDTO.getEmail())
-                        .build();
-                return ResponseEntity.ok(userDTO);
+            if(userRegisterDTO.getRefreshToken() == null) {
+                return ResponseEntity.ok(userRegisterDTO.getUserDTO());
             }
 
             //Create the Cookie
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", createdUserDTO.getRefreshToken())
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
                     .secure(true)
                     .sameSite("Strict")
@@ -143,17 +124,10 @@ public class UserController {
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
 
-            //Remove the refresh token from response body
-            UserDTO userDTO = UserDTO.builder()
-                    .id(createdUserDTO.getId())
-                    .email(createdUserDTO.getEmail())
-                    .username(createdUserDTO.getUsername())
-                    .build();
-
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                    .body(userDTO);
+                    .body(userRegisterDTO.getUserDTO());
 
 
         }
