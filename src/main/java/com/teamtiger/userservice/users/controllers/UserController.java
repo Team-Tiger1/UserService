@@ -129,7 +129,7 @@ public class UserController {
 
         try {
             String accessToken = authHeader.replace("Bearer ", "");
-
+            userService.updateUserPassword(accessToken, passwordDTO);
             return ResponseEntity.noContent().build();
         }
 
