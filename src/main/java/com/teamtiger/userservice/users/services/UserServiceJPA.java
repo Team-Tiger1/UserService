@@ -106,6 +106,24 @@ public class UserServiceJPA implements UserService {
         return UserMapper.toDTO(savedUser);
     }
 
+    @Override
+    public void updateUserPassword(String accessToken, UpdateUserPasswordDTO passwordDTO) {
+
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        boolean isOldPasswordCorrect = passwordHasher.matches(passwordDTO.getOldPassword(), user.getPassword());
+        if(!isOldPasswordCorrect) {
+            throw new PasswordIncorrectException();
+        }
+
+        String hashedPassword = passwordHasher.hashPassword(passwordDTO.getNewPassword());
+        user.setPassword(hashedPassword);
+
+        userRepository.save(user);
+    }
+
     private static class UserMapper {
         public static UserDTO toDTO(User entity) {
             if (entity == null) return null;

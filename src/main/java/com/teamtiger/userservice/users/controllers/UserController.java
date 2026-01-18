@@ -9,6 +9,7 @@ import com.teamtiger.userservice.users.services.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -116,6 +117,22 @@ public class UserController {
         catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<?> updateUserPassword(@RequestHeader("Authorization") String authHeader,
+                                                @Valid @RequestBody UpdateUserPasswordDTO passwordDTO) {
+
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+
+            return ResponseEntity.noContent().build();
+        }
+
 
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();

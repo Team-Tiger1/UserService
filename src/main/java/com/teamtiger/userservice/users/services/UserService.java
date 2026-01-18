@@ -12,4 +12,6 @@ public interface UserService {
 
     UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO);
 
+    void updateUserPassword(String accessToken, UpdateUserPasswordDTO passwordDTO);
+
 }
