@@ -1,7 +1,7 @@
 package com.teamtiger.userservice.services;
 
 import com.teamtiger.userservice.users.models.CreateUserDTO;
-import com.teamtiger.userservice.users.models.CreatedUserDTO;
+import com.teamtiger.userservice.users.models.UserRegisterDTO;
 import com.teamtiger.userservice.users.services.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,8 @@ public class UserServiceTest {
                 .password("password1")
                 .build();
 
-        CreatedUserDTO createdUserDTO = userService.createUser(createUserDTO);
-        Assertions.assertFalse(createdUserDTO.getRefreshToken().isEmpty());
+        UserRegisterDTO userRegisterDTO = userService.createUser(createUserDTO);
+        Assertions.assertFalse(userRegisterDTO.getRefreshToken().isEmpty());
 
     }
 

@@ -4,12 +4,12 @@ import com.teamtiger.userservice.users.models.*;
 
 public interface UserService {
 
-    CreatedUserDTO createUser(CreateUserDTO userDTO);
+    UserRegisterDTO createUser(CreateUserDTO userDTO);
 
-    CreatedUserDTO userLogin(LoginDTO loginDTO);
+    UserRegisterDTO userLogin(LoginDTO loginDTO);
 
     UserDTO getUserProfile(String accessToken);
 
-    CreatedUserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO);
+    UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO);
 
 }
