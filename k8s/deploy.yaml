@@ -15,6 +15,15 @@ spec:
       containers:
         - name: user-service
           image: ghcr.io/team-tiger1/userservice:latest
+
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
