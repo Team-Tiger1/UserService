@@ -6,13 +6,12 @@ import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
-import com.teamtiger.userservice.vendors.models.CreateVendorDTO;
-import com.teamtiger.userservice.vendors.models.LoginVendorDTO;
-import com.teamtiger.userservice.vendors.models.VendorDTO;
-import com.teamtiger.userservice.vendors.models.VendorRegisterDTO;
+import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -80,6 +79,63 @@ public class VendorServiceJPA implements VendorService{
                 .refreshToken(refreshToken)
                 .vendorDTO(VendorMapper.toDTO(vendor))
                 .build();
+
+    }
+
+
+    @Override
+    public VendorDTO updateVendorDetails(UpdateVendorDTO updateVendorDTO, String accessToken) {
+
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+        Vendor savedVendor = vendorRepository.findById(vendorId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        if(updateVendorDTO.getCompanyName() != null) {
+            savedVendor.setName(updateVendorDTO.getCompanyName());
+        }
+
+        if(updateVendorDTO.getDescription() != null) {
+            savedVendor.setDescription(updateVendorDTO.getDescription());
+        }
+
+        if(updateVendorDTO.getEmail() != null) {
+            savedVendor.setEmail(updateVendorDTO.getEmail());
+        }
+
+        if(updateVendorDTO.getPhoneNumber() != null) {
+            savedVendor.setPhoneNumber(updateVendorDTO.getPhoneNumber());
+        }
+
+        if(updateVendorDTO.getStreetAddress() != null) {
+            savedVendor.setStreetAddress(updateVendorDTO.getStreetAddress());
+        }
+
+        if(updateVendorDTO.getPostcode() != null) {
+            savedVendor.setPostcode(updateVendorDTO.getPostcode());
+        }
+
+        Vendor updatedVendor = vendorRepository.save(savedVendor);
+
+        return VendorMapper.toDTO(updatedVendor);
+    }
+
+
+    @Override
+    public void updatePassword(UpdateVendorPasswordDTO passwordDTO, String accessToken) {
+
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        boolean doesOldPasswordMatch = passwordHasher.matches(passwordDTO.getOldPassword(), vendor.getPassword());
+        if(!doesOldPasswordMatch) {
+            throw new PasswordIncorrectException();
+        }
+
+        String hashedPassword = passwordHasher.hashPassword(passwordDTO.getNewPassword());
+        vendor.setPassword(hashedPassword);
+
+        vendorRepository.save(vendor);
 
     }
 
