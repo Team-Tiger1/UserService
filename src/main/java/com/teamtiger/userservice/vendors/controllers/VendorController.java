@@ -4,9 +4,7 @@ import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
-import com.teamtiger.userservice.vendors.models.CreateVendorDTO;
-import com.teamtiger.userservice.vendors.models.LoginVendorDTO;
-import com.teamtiger.userservice.vendors.models.VendorRegisterDTO;
+import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.services.VendorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/vendors")
@@ -85,6 +80,48 @@ public class VendorController {
 
         catch (PasswordIncorrectException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> updateVendorDetails(@RequestHeader("Authorization") String token,
+                                                 @Valid @RequestBody UpdateVendorDTO updateVendorDTO) {
+
+        try {
+
+            String accessToken = token.replace("Bearer ", "");
+            VendorDTO vendorDTO = vendorService.updateVendorDetails(updateVendorDTO, accessToken);
+
+            return ResponseEntity.ok(vendorDTO);
+
+        }
+
+        catch (CompanyNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<?> updateVendorPassword(@RequestHeader("Authorization") String token,
+                                                  UpdateVendorPasswordDTO passwordDTO) {
+        try {
+            String accessToken = token.replace("Bearer ", "");
+            vendorService.updatePassword(passwordDTO, accessToken);
+            return ResponseEntity.noContent().build();
+        }
+
+        catch(CompanyNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
 
         catch (Exception e) {
