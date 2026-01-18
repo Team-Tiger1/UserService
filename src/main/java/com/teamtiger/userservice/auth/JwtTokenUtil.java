@@ -11,6 +11,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtTokenUtil {
@@ -26,13 +27,13 @@ public class JwtTokenUtil {
     public static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
 
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(UUID uuid) {
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(uuid.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
@@ -40,12 +41,12 @@ public class JwtTokenUtil {
     }
 
 
-    public String generateRefreshToken(String username, String userType) {
+    public String generateRefreshToken(UUID uuid, String userType) {
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
-        Claims claims = Jwts.claims().setSubject(username);
+        Claims claims = Jwts.claims().setSubject(uuid.toString());
         claims.put("type", userType);
 
         return Jwts.builder()
@@ -57,8 +58,8 @@ public class JwtTokenUtil {
     }
 
 
-    public String getUsernameFromToken(String token) {
-        return getClaimsFromToken(token).getSubject();
+    public UUID getUuidFromToken(String token) {
+        return UUID.fromString(getClaimsFromToken(token).getSubject());
     }
 
     public String getRoleFromToken(String token) {

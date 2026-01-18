@@ -10,6 +10,6 @@ public interface UserService {
 
     UserDTO getUserProfile(String accessToken);
 
-    UserRegisterDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO);
+    UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO);
 
 }

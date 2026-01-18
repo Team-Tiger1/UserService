@@ -108,28 +108,9 @@ public class UserController {
         try {
             String accessToken = authHeader.replace("Bearer ", "");
 
-            UserRegisterDTO userRegisterDTO = userService.updateUserProfile(accessToken, updateUserDTO);
+            UserDTO userDTO = userService.updateUserProfile(accessToken, updateUserDTO);
 
-            //If username has changed then issue new refresh token to match
-            if(userRegisterDTO.getRefreshToken() == null) {
-                return ResponseEntity.ok(userRegisterDTO.getUserDTO());
-            }
-
-            //Create the Cookie
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("Strict")
-                    .path("/api/auth/refresh")
-                    .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
-                    .build();
-
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                    .body(userRegisterDTO.getUserDTO());
-
-
+            return ResponseEntity.ok(userDTO);
         }
 
         catch (UserNotFoundException e) {

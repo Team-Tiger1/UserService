@@ -49,7 +49,7 @@ public class VendorServiceJPA implements VendorService{
         Vendor savedVendor = vendorRepository.save(vendor);
 
         //Generate a refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(savedVendor.getName(), "VENDOR");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(vendor.getId(), "VENDOR");
 
         return VendorRegisterDTO.builder()
                 .vendorDTO(VendorMapper.toDTO(savedVendor))
@@ -74,7 +74,7 @@ public class VendorServiceJPA implements VendorService{
         }
 
         //Create new refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(loginVendorDTO.getEmail(), "VENDOR");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(vendor.getId(), "VENDOR");
 
         return VendorRegisterDTO.builder()
                 .refreshToken(refreshToken)

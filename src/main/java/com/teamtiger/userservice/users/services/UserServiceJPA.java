@@ -11,6 +11,8 @@ import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceJPA implements UserService {
@@ -41,7 +43,7 @@ public class UserServiceJPA implements UserService {
         User savedUser = userRepository.save(user);
 
         //Get Refresh Token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getUsername(), "USER");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getId(), "USER");
 
 
         return UserRegisterDTO.builder()
@@ -64,7 +66,7 @@ public class UserServiceJPA implements UserService {
         }
 
         //Generate new refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getUsername(), "USER");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), "USER");
 
         return UserRegisterDTO.builder()
                 .refreshToken(refreshToken)
@@ -74,26 +76,24 @@ public class UserServiceJPA implements UserService {
 
     @Override
     public UserDTO getUserProfile(String accessToken) {
-        String username = jwtTokenUtil.getUsernameFromToken(accessToken);
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
 
-        User savedUser = userRepository.findByUsername(username)
+        User savedUser = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         return UserMapper.toDTO(savedUser);
     }
 
     @Override
-    public UserRegisterDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
+    public UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
 
-        String username = jwtTokenUtil.getUsernameFromToken(accessToken);
-        User user = userRepository.findByUsername(username)
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         //If there are not new values return user entity
         if(updateUserDTO.getUsername() == null && updateUserDTO.getEmail() == null) {
-            return UserRegisterDTO.builder()
-                    .userDTO(UserMapper.toDTO(user))
-                    .build();
+            return UserMapper.toDTO(user);
         }
 
         //Update email
@@ -101,19 +101,9 @@ public class UserServiceJPA implements UserService {
             user.setEmail(updateUserDTO.getEmail());
         }
 
-        //Update username and issue new refresh token
-        String refreshToken = null;
-        if(updateUserDTO.getUsername() != null) {
-            user.setUsername(updateUserDTO.getUsername());
-
-            refreshToken = jwtTokenUtil.generateRefreshToken(updateUserDTO.getUsername(), "USER");
-        }
-
         User savedUser = userRepository.save(user);
-        return UserRegisterDTO.builder()
-                .userDTO(UserMapper.toDTO(user))
-                .refreshToken(refreshToken)
-                .build();
+
+        return UserMapper.toDTO(savedUser);
     }
 
     private static class UserMapper {
