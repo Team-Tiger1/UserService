@@ -4,6 +4,8 @@ import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.models.AccessTokenDTO;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.repositories.UserRepository;
+import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
+import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class AuthServiceJPA implements AuthService{
 
     private final UserRepository userRepository;
-//    private final VendorRepository vendorRepository;
+    private final VendorRepository vendorRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
     @Override
@@ -29,16 +31,18 @@ public class AuthServiceJPA implements AuthService{
                 throw new UserNotFoundException();
             }
         } else if (role.equals("VENDOR")) {
-//            boolean doesCompanyExist = vendorRepository.existsByName(username);
+            boolean doesCompanyExist = vendorRepository.existsByName(username);
+            if(!doesCompanyExist) {
+                throw new CompanyNotFoundException();
+            }
         }
 
 
 
 
         //Generate new access token
-        AccessTokenDTO accessTokenDTO = AccessTokenDTO.builder()
+        return AccessTokenDTO.builder()
                 .accessToken(jwtTokenUtil.generateAccessToken(username))
                 .build();
-        return accessTokenDTO;
     }
 }

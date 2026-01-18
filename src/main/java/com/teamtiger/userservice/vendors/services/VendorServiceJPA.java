@@ -2,10 +2,12 @@ package com.teamtiger.userservice.vendors.services;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
-import com.teamtiger.userservice.users.services.UserServiceJPA;
+import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
+import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
 import com.teamtiger.userservice.vendors.models.CreateVendorDTO;
+import com.teamtiger.userservice.vendors.models.LoginVendorDTO;
 import com.teamtiger.userservice.vendors.models.VendorDTO;
 import com.teamtiger.userservice.vendors.models.VendorRegisterDTO;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
@@ -52,6 +54,31 @@ public class VendorServiceJPA implements VendorService{
         return VendorRegisterDTO.builder()
                 .vendorDTO(VendorMapper.toDTO(savedVendor))
                 .refreshToken(refreshToken)
+                .build();
+
+    }
+
+
+    @Override
+    public VendorRegisterDTO loginVendor(LoginVendorDTO loginVendorDTO) {
+        String trimmedEmail = loginVendorDTO.getEmail().trim();
+
+        Vendor vendor = vendorRepository.findByEmail(trimmedEmail)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        //Check if passwords match
+        boolean isPasswordCorrect = passwordHasher.matches(loginVendorDTO.getPassword(), vendor.getPassword());
+
+        if(!isPasswordCorrect) {
+            throw new PasswordIncorrectException();
+        }
+
+        //Create new refresh token
+        String refreshToken = jwtTokenUtil.generateRefreshToken(loginVendorDTO.getEmail(), "VENDOR");
+
+        return VendorRegisterDTO.builder()
+                .refreshToken(refreshToken)
+                .vendorDTO(VendorMapper.toDTO(vendor))
                 .build();
 
     }

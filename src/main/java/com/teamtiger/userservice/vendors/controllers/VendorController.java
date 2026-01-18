@@ -1,8 +1,11 @@
 package com.teamtiger.userservice.vendors.controllers;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
+import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
+import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
 import com.teamtiger.userservice.vendors.models.CreateVendorDTO;
+import com.teamtiger.userservice.vendors.models.LoginVendorDTO;
 import com.teamtiger.userservice.vendors.models.VendorRegisterDTO;
 import com.teamtiger.userservice.vendors.services.VendorService;
 import jakarta.validation.Valid;
@@ -53,6 +56,41 @@ public class VendorController {
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginVendor(@Valid @RequestBody LoginVendorDTO loginVendorDTO) {
+
+        try {
+            VendorRegisterDTO vendorRegisterDTO = vendorService.loginVendor(loginVendorDTO);
+
+            //Create the Cookie
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", vendorRegisterDTO.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("Strict")
+                    .path("/api/auth/refresh")
+                    .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .body(vendorRegisterDTO.getVendorDTO());
+
+        }
+
+        catch (CompanyNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (PasswordIncorrectException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
     }
 
 
