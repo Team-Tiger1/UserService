@@ -3,6 +3,7 @@ package com.teamtiger.userservice.auth.controllers;
 import com.teamtiger.userservice.auth.models.AccessTokenDTO;
 import com.teamtiger.userservice.auth.services.AuthServiceJPA;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ public class AuthController {
 
     private final AuthServiceJPA authServiceJPA;
 
+    @Operation(summary = "Creates an access token given a refresh token")
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@NotBlank @CookieValue("refreshToken") String refreshToken) {
         try {

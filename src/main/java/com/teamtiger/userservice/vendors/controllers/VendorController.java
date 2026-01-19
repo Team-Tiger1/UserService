@@ -6,6 +6,7 @@ import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.services.VendorService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +22,7 @@ public class VendorController {
 
     private final VendorService vendorService;
 
-
+    @Operation(summary = "Allows a Vendor to create an account")
     @PostMapping("/register")
     public ResponseEntity<?> registerVendor(@Valid @RequestBody CreateVendorDTO createVendorDTO) {
         try {
@@ -53,6 +54,7 @@ public class VendorController {
         }
     }
 
+    @Operation(summary = "Allows a Vendor to login")
     @PostMapping("/login")
     public ResponseEntity<?> loginVendor(@Valid @RequestBody LoginVendorDTO loginVendorDTO) {
 
@@ -88,6 +90,7 @@ public class VendorController {
 
     }
 
+    @Operation(summary = "Allows a Vendor to update their account details")
     @PatchMapping("/me")
     public ResponseEntity<?> updateVendorDetails(@RequestHeader("Authorization") String token,
                                                  @Valid @RequestBody UpdateVendorDTO updateVendorDTO) {
@@ -111,6 +114,7 @@ public class VendorController {
 
     }
 
+    @Operation(summary = "Allows a Vendor to update their password")
     @PatchMapping("/password")
     public ResponseEntity<?> updateVendorPassword(@RequestHeader("Authorization") String token,
                                                   UpdateVendorPasswordDTO passwordDTO) {

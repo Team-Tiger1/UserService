@@ -6,6 +6,7 @@ import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
 import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "Creates a new User")
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
         try {
@@ -51,6 +53,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Allows a User to Login")
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO) {
         try {
@@ -84,6 +87,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Allows a User to get their own profile")
     @GetMapping("/me")
     public ResponseEntity<?> getUserProfile(@NotBlank @RequestHeader("Authorization") String authHeader) {
         try {
@@ -102,6 +106,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Allows a user to update their user details")
     @PatchMapping("/me")
     public ResponseEntity<?> updateUserProfile(@NotBlank @RequestHeader("Authorization") String authHeader,
                                                @Valid @RequestBody UpdateUserDTO updateUserDTO) {
@@ -122,6 +127,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Allows a User to change their password")
     @PatchMapping("/password")
     public ResponseEntity<?> updateUserPassword(@RequestHeader("Authorization") String authHeader,
                                                 @Valid @RequestBody UpdateUserPasswordDTO passwordDTO) {
