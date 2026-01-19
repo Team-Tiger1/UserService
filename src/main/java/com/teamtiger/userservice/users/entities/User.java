@@ -22,13 +22,13 @@ public class User {
     @Column(name = "user_id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(columnDefinition = "varchar", length = UserConstants.MAX_USERNAME_LENGTH, nullable = false)
+    @Column(length = UserConstants.MAX_USERNAME_LENGTH, nullable = false, unique = true)
     private String username;
 
-    @Column(columnDefinition = "varchar", nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(columnDefinition = "varchar", nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @Version

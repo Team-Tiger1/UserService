@@ -3,6 +3,7 @@ package com.teamtiger.userservice.users.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.users.entities.User;
+import com.teamtiger.userservice.users.exceptions.EmailAlreadyTakenException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
@@ -28,6 +29,11 @@ public class UserServiceJPA implements UserService {
         String trimmedUsername = userDTO.getUsername().trim();
         if(userRepository.existsByUsername(trimmedUsername)) {
             throw new UsernameAlreadyTakenException();
+        }
+
+        //Check if email is already taken
+        if(userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new EmailAlreadyTakenException();
         }
 
         //Hash Password
@@ -98,8 +104,9 @@ public class UserServiceJPA implements UserService {
         }
 
         //Update email
-        if(updateUserDTO.getEmail() != null) {
-            user.setEmail(updateUserDTO.getEmail());
+        String email = updateUserDTO.getEmail();
+        if(email != null && !userRepository.existsByEmail(email)) {
+            user.setEmail(email);
         }
 
         User savedUser = userRepository.save(user);

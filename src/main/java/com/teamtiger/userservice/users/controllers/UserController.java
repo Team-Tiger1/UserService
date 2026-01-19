@@ -1,6 +1,7 @@
 package com.teamtiger.userservice.users.controllers;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
+import com.teamtiger.userservice.users.exceptions.EmailAlreadyTakenException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
@@ -44,7 +45,7 @@ public class UserController {
                     .body(userRegisterDTO.getUserDTO());
         }
 
-        catch (UsernameAlreadyTakenException e) {
+        catch (UsernameAlreadyTakenException | EmailAlreadyTakenException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
