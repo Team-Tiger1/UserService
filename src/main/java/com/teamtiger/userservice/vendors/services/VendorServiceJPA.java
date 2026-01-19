@@ -87,6 +87,7 @@ public class VendorServiceJPA implements VendorService{
     public VendorDTO updateVendorDetails(UpdateVendorDTO updateVendorDTO, String accessToken) {
 
         UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
         Vendor savedVendor = vendorRepository.findById(vendorId)
                 .orElseThrow(CompanyNotFoundException::new);
 

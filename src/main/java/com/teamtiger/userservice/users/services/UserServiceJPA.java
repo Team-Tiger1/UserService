@@ -88,6 +88,7 @@ public class UserServiceJPA implements UserService {
     public UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
 
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 

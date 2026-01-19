@@ -9,7 +9,6 @@ import com.teamtiger.userservice.users.services.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -131,6 +130,10 @@ public class UserController {
             String accessToken = authHeader.replace("Bearer ", "");
             userService.updateUserPassword(accessToken, passwordDTO);
             return ResponseEntity.noContent().build();
+        }
+
+        catch (PasswordIncorrectException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
 
