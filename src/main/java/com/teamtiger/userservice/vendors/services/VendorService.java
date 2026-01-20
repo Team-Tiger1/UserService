@@ -12,4 +12,6 @@ public interface VendorService {
 
     void updatePassword(UpdateVendorPasswordDTO passwordDTO, String accessToken);
 
+    VendorDTO getVendorProfile(String accessToken);
+
 }

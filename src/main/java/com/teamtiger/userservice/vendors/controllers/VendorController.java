@@ -2,6 +2,7 @@ package com.teamtiger.userservice.vendors.controllers;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
+import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
@@ -132,6 +133,24 @@ public class VendorController {
             return ResponseEntity.internalServerError().build();
         }
 
+    }
+
+    @Operation(summary = "Allows a vendor to fetch their own profile")
+    @GetMapping("/me")
+    public ResponseEntity<?> getOwnVendorProfile(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            VendorDTO vendorDTO = vendorService.getVendorProfile(accessToken);
+            return ResponseEntity.ok(vendorDTO);
+        }
+
+        catch (CompanyNotFoundException e)  {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

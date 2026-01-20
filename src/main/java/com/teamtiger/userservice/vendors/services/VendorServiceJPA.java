@@ -140,6 +140,16 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
+    @Override
+    public VendorDTO getVendorProfile(String accessToken) {
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Vendor savedVendor = vendorRepository.findById(vendorId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        return VendorMapper.toDTO(savedVendor);
+    }
+
     private static class VendorMapper {
 
         public static VendorDTO toDTO(Vendor vendor) {
