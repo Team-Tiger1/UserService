@@ -45,13 +45,13 @@ public class JwtTokenUtil {
     }
 
 
-    public String generateRefreshToken(UUID uuid, Role userType) {
+    public String generateRefreshToken(UUID uuid, Role role) {
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
         Claims claims = Jwts.claims().setSubject(uuid.toString());
-        claims.put("type", userType);
+        claims.put("role", role);
 
         return Jwts.builder()
                 .setClaims(claims)
