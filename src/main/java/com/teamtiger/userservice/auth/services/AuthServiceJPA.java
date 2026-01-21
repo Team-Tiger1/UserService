@@ -2,6 +2,7 @@ package com.teamtiger.userservice.auth.services;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.models.AccessTokenDTO;
+import com.teamtiger.userservice.auth.models.Role;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
@@ -41,7 +42,7 @@ public class AuthServiceJPA implements AuthService{
 
         //Generate new access token
         return AccessTokenDTO.builder()
-                .accessToken(jwtTokenUtil.generateAccessToken(uuid))
+                .accessToken(jwtTokenUtil.generateAccessToken(uuid, Role.valueOf(role)))
                 .build();
     }
 }

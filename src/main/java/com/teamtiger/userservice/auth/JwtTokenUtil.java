@@ -1,5 +1,6 @@
 package com.teamtiger.userservice.auth;
 
+import com.teamtiger.userservice.auth.models.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -10,7 +11,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -27,13 +27,17 @@ public class JwtTokenUtil {
     public static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
 
 
-    public String generateAccessToken(UUID uuid) {
+    public String generateAccessToken(UUID uuid, Role role) {
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
+        Claims claims = Jwts.claims();
+        claims.setSubject(uuid.toString());
+        claims.put("role", role.toString());
+
         return Jwts.builder()
-                .setSubject(uuid.toString())
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
@@ -41,7 +45,7 @@ public class JwtTokenUtil {
     }
 
 
-    public String generateRefreshToken(UUID uuid, String userType) {
+    public String generateRefreshToken(UUID uuid, Role userType) {
 
         byte[] decodedKey = Base64.getDecoder().decode(key);
         Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());

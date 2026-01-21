@@ -2,6 +2,7 @@ package com.teamtiger.userservice.users.services;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
+import com.teamtiger.userservice.auth.models.Role;
 import com.teamtiger.userservice.users.entities.User;
 import com.teamtiger.userservice.users.exceptions.EmailAlreadyTakenException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
@@ -49,7 +50,7 @@ public class UserServiceJPA implements UserService {
         User savedUser = userRepository.save(user);
 
         //Get Refresh Token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getId(), "USER");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getId(), Role.USER);
 
 
         return UserRegisterDTO.builder()
@@ -72,7 +73,7 @@ public class UserServiceJPA implements UserService {
         }
 
         //Generate new refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), "USER");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), Role.USER);
 
         return UserRegisterDTO.builder()
                 .refreshToken(refreshToken)

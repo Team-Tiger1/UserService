@@ -2,6 +2,7 @@ package com.teamtiger.userservice.vendors.services;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
+import com.teamtiger.userservice.auth.models.Role;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
@@ -48,7 +49,7 @@ public class VendorServiceJPA implements VendorService{
         Vendor savedVendor = vendorRepository.save(vendor);
 
         //Generate a refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(vendor.getId(), "VENDOR");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(vendor.getId(), Role.VENDOR);
 
         return VendorRegisterDTO.builder()
                 .vendorDTO(VendorMapper.toDTO(savedVendor))
@@ -73,7 +74,7 @@ public class VendorServiceJPA implements VendorService{
         }
 
         //Create new refresh token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(vendor.getId(), "VENDOR");
+        String refreshToken = jwtTokenUtil.generateRefreshToken(vendor.getId(), Role.VENDOR);
 
         return VendorRegisterDTO.builder()
                 .refreshToken(refreshToken)
