@@ -67,7 +67,7 @@ public class JwtTokenUtil {
     }
 
     public String getRoleFromToken(String token) {
-        return (String) getClaimsFromToken(token).get("type");
+        return (String) getClaimsFromToken(token).get("role");
     }
 
     private Claims getClaimsFromToken(String token) {
