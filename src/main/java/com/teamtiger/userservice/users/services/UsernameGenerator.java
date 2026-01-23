@@ -4,6 +4,7 @@ import com.teamtiger.userservice.users.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +17,10 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class UsernameGenerator {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private static final int MAX_ATTEMPTS = 10;
+    private final ResourceLoader resourceLoader;
 
     private String[] animals;
     private String[] adjectives;
@@ -36,13 +38,13 @@ public class UsernameGenerator {
         }
 
         //Return random
-        int nounIndex = rand.nextInt(animals.length - 1);
+        int nounIndex = rand.nextInt(animals.length);
         return animals[nounIndex] + rand.nextInt(10000);
     }
 
     private String createUsername(Random rand) {
-        int animalIndex = rand.nextInt(animals.length - 1);
-        int adjectiveIndex = rand.nextInt(adjectives.length - 1);
+        int animalIndex = rand.nextInt(animals.length);
+        int adjectiveIndex = rand.nextInt(adjectives.length);
         return adjectives[adjectiveIndex] + " " + animals[animalIndex];
     }
 
@@ -55,7 +57,7 @@ public class UsernameGenerator {
     private String[] loadFile(String fileName) {
         List<String> lines = new ArrayList<>();
 
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource(fileName).getInputStream()))) {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(resourceLoader.getResource("classpath:" + fileName).getInputStream()))) {
             String line;
             while((line = reader.readLine()) != null) {
                 if(!line.isBlank()) {
