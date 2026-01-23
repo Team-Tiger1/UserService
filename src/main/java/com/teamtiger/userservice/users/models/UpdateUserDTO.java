@@ -9,8 +9,6 @@ import lombok.Getter;
 @Data
 public class UpdateUserDTO {
 
-    @Size(min = UserConstants.MIN_USERNAME_LENGTH, max = UserConstants.MAX_USERNAME_LENGTH)
-    private String username;
 
     @Email
     private String email;

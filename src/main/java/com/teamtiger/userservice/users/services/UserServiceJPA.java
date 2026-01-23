@@ -11,6 +11,7 @@ import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
 import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -22,15 +23,12 @@ public class UserServiceJPA implements UserService {
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
     private final PasswordHasher passwordHasher;
+    private final UsernameGenerator usernameGenerator;
 
     @Override
     public UserRegisterDTO createUser(CreateUserDTO userDTO) {
 
-        //Check if username is already taken
-        String trimmedUsername = userDTO.getUsername().trim();
-        if(userRepository.existsByUsername(trimmedUsername)) {
-            throw new UsernameAlreadyTakenException();
-        }
+        String username = usernameGenerator.generateUsername();
 
         //Check if email is already taken
         if(userRepository.existsByEmail(userDTO.getEmail())) {
@@ -41,20 +39,26 @@ public class UserServiceJPA implements UserService {
         String hashedPassword = passwordHasher.hashPassword(userDTO.getPassword());
 
         User user = User.builder()
-                .username(userDTO.getUsername())
+                .username(username)
                 .email(userDTO.getEmail())
                 .password(hashedPassword)
                 .build();
 
         //Save user entity to DB
-        User savedUser = userRepository.save(user);
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            //Try and generate new username if collision happens
+            username = usernameGenerator.generateUsername();
+            user.setUsername(username);
+            user = userRepository.save(user);
+        }
 
         //Get Refresh Token
-        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getId(), Role.USER);
-
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), Role.USER);
 
         return UserRegisterDTO.builder()
-                .userDTO(UserMapper.toDTO(savedUser))
+                .userDTO(UserMapper.toDTO(user))
                 .refreshToken(refreshToken)
                 .build();
     }
@@ -62,8 +66,8 @@ public class UserServiceJPA implements UserService {
     @Override
     public UserRegisterDTO userLogin(LoginDTO loginDTO) {
 
-        //Check if username matches record in DB
-        User user = userRepository.findByUsername(loginDTO.getUsername())
+        //Check if email matches record in DB
+        User user = userRepository.findByEmail(loginDTO.getEmail())
                 .orElseThrow(UserNotFoundException::new);
 
         //Check if password matches hashed version
@@ -100,7 +104,7 @@ public class UserServiceJPA implements UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         //If there are not new values return user entity
-        if(updateUserDTO.getUsername() == null && updateUserDTO.getEmail() == null) {
+        if(updateUserDTO.getEmail() == null) {
             return UserMapper.toDTO(user);
         }
 
