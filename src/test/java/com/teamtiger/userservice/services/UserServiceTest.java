@@ -20,7 +20,6 @@ public class UserServiceTest {
     public void testRegisterUser() {
         CreateUserDTO createUserDTO = CreateUserDTO.builder()
                 .email("example@exeter.ac.uk")
-                .username("example1")
                 .password("password1")
                 .build();
 
