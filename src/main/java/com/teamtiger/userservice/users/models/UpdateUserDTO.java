@@ -1,15 +1,13 @@
 package com.teamtiger.userservice.users.models;
 
-import com.teamtiger.userservice.users.UserConstants;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 public class UpdateUserDTO {
 
-
+    @NotBlank
     @Email
     private String email;
 
