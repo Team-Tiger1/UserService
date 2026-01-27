@@ -3,12 +3,11 @@ package com.teamtiger.userservice.users.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
+import com.teamtiger.userservice.users.entities.Streak;
 import com.teamtiger.userservice.users.entities.User;
-import com.teamtiger.userservice.users.exceptions.EmailAlreadyTakenException;
-import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
-import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
-import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
+import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
+import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,6 +23,7 @@ public class UserServiceJPA implements UserService {
     private final JwtTokenUtil jwtTokenUtil;
     private final PasswordHasher passwordHasher;
     private final UsernameGenerator usernameGenerator;
+    private final StreakRepository streakRepository;
 
     @Override
     public UserRegisterDTO createUser(CreateUserDTO userDTO) {
@@ -135,6 +135,25 @@ public class UserServiceJPA implements UserService {
         user.setPassword(hashedPassword);
 
         userRepository.save(user);
+    }
+
+    @Override
+    public StreakDTO getUserStreak(String accessToken) {
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        Streak streak = streakRepository.findById(userId).orElseGet(() -> {
+            return Streak.builder()
+                            .streak(0)
+                            .build();
+        });
+
+        return new StreakDTO(streak.getStreak());
+
     }
 
     private static class UserMapper {

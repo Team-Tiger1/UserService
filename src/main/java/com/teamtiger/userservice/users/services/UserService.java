@@ -14,4 +14,6 @@ public interface UserService {
 
     void updateUserPassword(String accessToken, UpdateUserPasswordDTO passwordDTO);
 
+    StreakDTO getUserStreak(String accessToken);
+
 }

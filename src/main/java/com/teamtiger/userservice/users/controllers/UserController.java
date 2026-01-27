@@ -1,10 +1,7 @@
 package com.teamtiger.userservice.users.controllers;
 
 import com.teamtiger.userservice.auth.JwtTokenUtil;
-import com.teamtiger.userservice.users.exceptions.EmailAlreadyTakenException;
-import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
-import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
-import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
+import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,6 +140,24 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(summary = "Get a streak for a user")
+    @GetMapping("/streak")
+    public ResponseEntity<?> getUserStreak(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            StreakDTO streakDTO = userService.getUserStreak(accessToken);
+            return ResponseEntity.ok(streakDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
