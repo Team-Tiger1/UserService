@@ -14,6 +14,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -153,6 +155,24 @@ public class UserController {
             String accessToken = authHeader.replace("Bearer ", "");
             StreakDTO streakDTO = userService.getUserStreak(accessToken);
             return ResponseEntity.ok(streakDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(summary = "Allows for bulk data transfer for seeded data")
+    @PostMapping("/internal")
+    public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @RequestBody List<UserSeedDTO> users) {
+        try {
+            String token = authToken.replace("Bearer ", "");
+            userService.loadSeededUsers(token, users);
+            return ResponseEntity.noContent().build();
         }
 
         catch (AuthorizationException e) {

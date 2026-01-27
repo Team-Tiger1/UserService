@@ -2,6 +2,8 @@ package com.teamtiger.userservice.vendors.services;
 
 import com.teamtiger.userservice.vendors.models.*;
 
+import java.util.List;
+
 public interface VendorService {
 
     VendorRegisterDTO createVendor(CreateVendorDTO createVendorDTO);
@@ -13,5 +15,7 @@ public interface VendorService {
     void updatePassword(UpdateVendorPasswordDTO passwordDTO, String accessToken);
 
     VendorDTO getVendorProfile(String accessToken);
+
+    void loadSeededData(String accessToken, List<CreateVendorDTO> vendors);
 
 }

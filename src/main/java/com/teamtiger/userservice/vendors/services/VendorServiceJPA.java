@@ -3,6 +3,7 @@ package com.teamtiger.userservice.vendors.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
+import com.teamtiger.userservice.users.exceptions.AuthorizationException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
@@ -12,6 +13,7 @@ import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -149,6 +151,32 @@ public class VendorServiceJPA implements VendorService{
                 .orElseThrow(CompanyNotFoundException::new);
 
         return VendorMapper.toDTO(savedVendor);
+    }
+
+    @Override
+    public void loadSeededData(String accessToken, List<CreateVendorDTO> vendors) {
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("INTERNAL")) {
+            throw new AuthorizationException();
+        }
+
+        List<Vendor> vendorEntities = vendors.stream()
+                .map(dto -> Vendor.builder()
+                        .name(dto.getName())
+                        .email(dto.getEmail())
+                        .description(dto.getDescription())
+                        .streetAddress(dto.getStreetAddress())
+                        .postcode(dto.getPostcode())
+                        .phoneNumber(dto.getPhoneNumber())
+                        .category(dto.getCategory())
+                        .password(passwordHasher.hashPassword(dto.getPassword()))
+                        .build())
+                .toList();
+
+        vendorRepository.saveAll(vendorEntities);
+
+
     }
 
     private static class VendorMapper {

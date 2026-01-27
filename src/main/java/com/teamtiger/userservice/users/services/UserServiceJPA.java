@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -154,6 +155,36 @@ public class UserServiceJPA implements UserService {
 
         return new StreakDTO(streak.getStreak());
 
+    }
+
+    @Override
+    public void loadSeededUsers(String accessToken, List<UserSeedDTO> users) {
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("INTERNAL")) {
+            throw new AuthorizationException();
+        }
+
+        List<User> entityList = users.stream()
+                .map(dto -> User.builder()
+                        .id(dto.getId())
+                        .username(usernameGenerator.generateUsername())
+                        .email(dto.getEmail())
+                        .password(passwordHasher.hashPassword(dto.getPassword()))
+                        .build())
+                .toList();
+
+        List<Streak> streakList = users.stream()
+                .filter(dto -> dto.getStreak() > 0)
+                .map(dto -> Streak.builder()
+                        .userId(dto.getId())
+                        .streak(dto.getStreak())
+                        .lastReservation(dto.getLastReservationTime())
+                        .build())
+                .toList();
+
+        userRepository.saveAll(entityList);
+        streakRepository.saveAll(streakList);
     }
 
     private static class UserMapper {

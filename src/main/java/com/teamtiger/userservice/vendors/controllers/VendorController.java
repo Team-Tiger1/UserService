@@ -16,6 +16,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/vendors")
 @RequiredArgsConstructor
@@ -151,6 +153,22 @@ public class VendorController {
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @Operation(summary = "Allows bulk data transfer for seeded data")
+    @PostMapping("/internal")
+    public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, List<CreateVendorDTO> vendors) {
+        try {
+            String accessToken = authToken.replace("Bearer ", "");
+
+            return ResponseEntity.noContent().build();
+
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
     }
 
 
