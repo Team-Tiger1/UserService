@@ -16,8 +16,13 @@ public class Badge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
+    private BadgeName name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
+    private BadgeGrade grade;
 
 
 }

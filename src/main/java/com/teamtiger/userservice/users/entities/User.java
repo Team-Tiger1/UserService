@@ -46,6 +46,12 @@ public class User {
     )
     private Set<Badge> badges;
 
+    @OneToOne(
+            mappedBy = "user",
+            orphanRemoval = true
+    )
+    private Streak streak;
+
     @Version
     private Long version;
 
