@@ -33,6 +33,11 @@ spec:
                 secretKeyRef:
                   name: gateway-secrets
                   key: jwt-secret
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: db-password
 ---
 apiVersion: v1
 kind: Service
