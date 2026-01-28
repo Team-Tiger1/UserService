@@ -28,6 +28,8 @@ jobs:
         run: chmod +x mvnw
 
       -  name: Run Tests
+         env:
+           RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
          run: ./mvnw test
 
       - name: Build with Maven
@@ -46,6 +48,8 @@ jobs:
           docker push ${{ env.IMAGE_NAME }}:latest
 
       - name: Deploy to K3s
+        env:
+          KUBECONFIG: /home/daniel/.kube/config
         run: |
           sed -i "s|image: .*|image: ${{ env.IMAGE_NAME }}:latest|g" k8s/deploy.yaml
           kubectl apply -f k8s/deploy.yaml
