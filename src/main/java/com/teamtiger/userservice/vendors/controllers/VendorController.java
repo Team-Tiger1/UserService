@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/vendors")
@@ -169,6 +170,36 @@ public class VendorController {
             return ResponseEntity.internalServerError().build();
         }
 
+    }
+
+    @Operation(summary = "Gets all vendors basic info")
+    @GetMapping
+    public ResponseEntity<?> getAllVendors() {
+        try {
+            List<BasicVendorDTO> vendors = vendorService.getAllVendors();
+            return ResponseEntity.ok(vendors);
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(summary = "Get Detailed Vendor Info")
+    @GetMapping("/{vendorId}")
+    public ResponseEntity<?> getVendorInfo(@PathVariable UUID vendorId) {
+        try {
+            VendorDTO vendorDTO = vendorService.getDetailedVendorInfo(vendorId);
+            return ResponseEntity.ok(vendorDTO);
+        }
+
+        catch (CompanyNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

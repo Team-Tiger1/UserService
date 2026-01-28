@@ -2,7 +2,8 @@ package com.teamtiger.userservice.vendors.entities;
 
 public enum VendorCategory {
     SUPERMARKET,
-    CAFE_BAKERY,
+    CAFE,
+    BAKERY,
     RESTAURANT,
     FAST_FOOD,
     DESSERT_SHOP,

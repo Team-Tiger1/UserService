@@ -179,6 +179,25 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
+    @Override
+    public List<BasicVendorDTO> getAllVendors() {
+        return vendorRepository.findAll().stream()
+                .map(entity -> BasicVendorDTO.builder()
+                        .vendorId(entity.getId())
+                        .vendorName(entity.getName())
+                        .vendorDescription(entity.getDescription())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public VendorDTO getDetailedVendorInfo(UUID vendorId) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        return VendorMapper.toDTO(vendor);
+    }
+
     private static class VendorMapper {
 
         public static VendorDTO toDTO(Vendor vendor) {
