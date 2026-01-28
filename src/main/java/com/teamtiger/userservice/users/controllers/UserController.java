@@ -32,9 +32,9 @@ public class UserController {
             //Create the Cookie
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
-                    .secure(true)
-                    .sameSite("Strict")
-                    .path("/api/auth/refresh")
+                    .secure(false) //CHANGE TO true for PRODUCTION
+                    .sameSite("Lax")
+                    .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
 
@@ -62,9 +62,9 @@ public class UserController {
             //Create the Cookie
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
-                    .secure(true)
-                    .sameSite("Strict")
-                    .path("/api/auth/refresh")
+                    .secure(false)
+                    .sameSite("Lax")
+                    .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
 

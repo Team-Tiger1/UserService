@@ -181,13 +181,17 @@ public class VendorServiceJPA implements VendorService{
 
     @Override
     public List<BasicVendorDTO> getAllVendors() {
-        return vendorRepository.findAll().stream()
+
+        List<Vendor> vendorList = vendorRepository.findAll();
+
+        return vendorList.stream()
                 .map(entity -> BasicVendorDTO.builder()
                         .vendorId(entity.getId())
                         .vendorName(entity.getName())
                         .vendorDescription(entity.getDescription())
                         .build())
                 .toList();
+
     }
 
     @Override
