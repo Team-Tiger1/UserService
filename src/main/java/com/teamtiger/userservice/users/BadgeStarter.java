@@ -16,27 +16,27 @@ public class BadgeStarter implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if(badgeRepository.count() > 0) {
-            return;
-        }
-
-        Badge badge = Badge.builder()
-                .name(BadgeName.HOT_SHOPPER)
-                .grade(BadgeGrade.BRONZE)
-                .build();
-
-        Badge badge1 = Badge.builder()
-                .name(BadgeName.HOT_SHOPPER)
-                .grade(BadgeGrade.SILVER)
-                .build();
-
-        Badge badge2 = Badge.builder()
-                .name(BadgeName.HOT_SHOPPER)
-                .grade(BadgeGrade.GOLD)
-                .build();
-
-        badgeRepository.save(badge);
-        badgeRepository.save(badge1);
-        badgeRepository.save(badge2);
+//        if(badgeRepository.count() > 0) {
+//            return;
+//        }
+//
+//        Badge badge = Badge.builder()
+//                .name(BadgeName.HOT_SHOPPER)
+//                .grade(BadgeGrade.BRONZE)
+//                .build();
+//
+//        Badge badge1 = Badge.builder()
+//                .name(BadgeName.HOT_SHOPPER)
+//                .grade(BadgeGrade.SILVER)
+//                .build();
+//
+//        Badge badge2 = Badge.builder()
+//                .name(BadgeName.HOT_SHOPPER)
+//                .grade(BadgeGrade.GOLD)
+//                .build();
+//
+//        badgeRepository.save(badge);
+//        badgeRepository.save(badge1);
+//        badgeRepository.save(badge2);
     }
 }

@@ -23,24 +23,24 @@ public class VendorStarter implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Vendor vendor = Vendor.builder()
-                .name("Exeter Bakery")
-                .email("bakery@gmail.com")
-                .password("password")
-                .phoneNumber("534534534")
-                .postcode("EX5 GEF")
-                .category(VendorCategory.BAKERY)
-                .streetAddress("35 Exeter Street")
-                .build();
-
-        User user = User.builder()
-                .email("example@gmail.com")
-                .password(passwordHasher.hashPassword("password"))
-                .username(usernameGenerator.generateUsername())
-                .build();
-
-        userRepository.save(user);
-
-        System.out.println(vendorRepository.save(vendor).getId());
+//        Vendor vendor = Vendor.builder()
+//                .name("Exeter Bakery")
+//                .email("bakery@gmail.com")
+//                .password("password")
+//                .phoneNumber("534534534")
+//                .postcode("EX5 GEF")
+//                .category(VendorCategory.BAKERY)
+//                .streetAddress("35 Exeter Street")
+//                .build();
+//
+//        User user = User.builder()
+//                .email("example@gmail.com")
+//                .password(passwordHasher.hashPassword("password"))
+//                .username(usernameGenerator.generateUsername())
+//                .build();
+//
+//        userRepository.save(user);
+//
+//        System.out.println(vendorRepository.save(vendor).getId());
     }
 }
