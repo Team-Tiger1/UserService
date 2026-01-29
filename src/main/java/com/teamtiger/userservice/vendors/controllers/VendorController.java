@@ -36,7 +36,7 @@ public class VendorController {
             //Create the Cookie
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", vendorRegisterDTO.getRefreshToken())
                     .httpOnly(true)
-                    .secure(false) //CHANGE TO TRUE FOR PRODUCTION
+                    .secure(true) //CHANGE TO TRUE FOR PRODUCTION
                     .sameSite("None")
                     .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
@@ -68,7 +68,7 @@ public class VendorController {
             //Create the Cookie
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", vendorRegisterDTO.getRefreshToken())
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .sameSite("None")
                     .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
