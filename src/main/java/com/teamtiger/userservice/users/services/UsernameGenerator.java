@@ -25,6 +25,8 @@ public class UsernameGenerator {
     private String[] animals;
     private String[] adjectives;
 
+
+    @Transactional
     public String generateUsername() {
         Random rand = new Random();
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
