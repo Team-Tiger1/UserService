@@ -154,7 +154,7 @@ public class VendorServiceJPA implements VendorService{
     }
 
     @Override
-    public void loadSeededData(String accessToken, List<CreateVendorDTO> vendors) {
+    public void loadSeededData(String accessToken, List<VendorSeedDTO> vendors) {
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
         if(!role.equals("INTERNAL")) {
