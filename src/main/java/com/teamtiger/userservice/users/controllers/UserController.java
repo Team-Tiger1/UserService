@@ -33,7 +33,7 @@ public class UserController {
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
                     .secure(false) //CHANGE TO true for PRODUCTION
-                    .sameSite("Lax")
+                    .sameSite("None")
                     .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
@@ -63,7 +63,7 @@ public class UserController {
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
                     .secure(false)
-                    .sameSite("Lax")
+                    .sameSite("None")
                     .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)
                     .build();
