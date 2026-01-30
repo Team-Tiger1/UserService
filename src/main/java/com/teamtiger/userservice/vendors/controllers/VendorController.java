@@ -158,7 +158,7 @@ public class VendorController {
 
     @Operation(summary = "Allows bulk data transfer for seeded data")
     @PostMapping("/internal")
-    public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @RequestBody List<CreateVendorDTO> vendors) {
+    public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @RequestBody List<VendorSeedDTO> vendors) {
         try {
             String accessToken = authToken.replace("Bearer ", "");
             vendorService.loadSeededData(accessToken, vendors);

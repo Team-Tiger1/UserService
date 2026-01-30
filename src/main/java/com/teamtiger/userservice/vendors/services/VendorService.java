@@ -17,7 +17,7 @@ public interface VendorService {
 
     VendorDTO getVendorProfile(String accessToken);
 
-    void loadSeededData(String accessToken, List<CreateVendorDTO> vendors);
+    void loadSeededData(String accessToken, List<VendorSeedDTO> vendors);
 
     List<BasicVendorDTO> getAllVendors();
 
