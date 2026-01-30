@@ -11,7 +11,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
@@ -42,7 +41,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY.toMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY.toMillis()))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
                 .compact();
     }
