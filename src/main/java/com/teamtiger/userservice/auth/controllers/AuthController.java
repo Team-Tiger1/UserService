@@ -3,6 +3,7 @@ package com.teamtiger.userservice.auth.controllers;
 import com.teamtiger.userservice.auth.models.AccessTokenDTO;
 import com.teamtiger.userservice.auth.services.AuthServiceJPA;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
+import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class AuthController {
             return ResponseEntity.ok(accessTokenDTO);
         }
 
-        catch (UserNotFoundException e) {
+        catch (UserNotFoundException | CompanyNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
 

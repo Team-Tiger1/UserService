@@ -9,6 +9,7 @@ import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class AuthServiceJPA implements AuthService{
     private final JwtTokenUtil jwtTokenUtil;
 
     @Override
+    @Transactional
     public AccessTokenDTO getAccessToken(String refreshToken) {
 
         //Extract username from JWT token
@@ -30,6 +32,7 @@ public class AuthServiceJPA implements AuthService{
         //Check username existence against DB
         if(role.equals("USER")) {
             boolean doesUserExists = userRepository.existsById(uuid);
+            System.out.println(uuid + " " + doesUserExists);
             if(!doesUserExists) {
                 throw new UserNotFoundException();
             }
