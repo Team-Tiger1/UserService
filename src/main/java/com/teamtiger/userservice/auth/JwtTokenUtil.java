@@ -4,6 +4,7 @@ import com.teamtiger.userservice.auth.models.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,11 +29,17 @@ public class JwtTokenUtil {
     // Refresh token expires in 7 days
     public static final Duration REFRESH_TOKEN_EXPIRY = Duration.of(6, ChronoUnit.MONTHS);
 
+    private Key hmacKey;
+
+    @PostConstruct
+    private void init() {
+        System.out.println(key);
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        this.hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
+    }
+
 
     public String generateAccessToken(UUID uuid, Role role) {
-
-        byte[] decodedKey = Base64.getDecoder().decode(key);
-        Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
         Claims claims = Jwts.claims();
         claims.setSubject(uuid.toString());
@@ -48,9 +55,6 @@ public class JwtTokenUtil {
 
 
     public String generateRefreshToken(UUID uuid, Role role) {
-
-        byte[] decodedKey = Base64.getDecoder().decode(key);
-        Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
         Claims claims = Jwts.claims().setSubject(uuid.toString());
         claims.put("role", role);
@@ -73,8 +77,6 @@ public class JwtTokenUtil {
     }
 
     private Claims getClaimsFromToken(String token) {
-        byte[] decodedKey = Base64.getDecoder().decode(key);
-        Key hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
 
         return Jwts.parserBuilder()
                 .setSigningKey(hmacKey)
