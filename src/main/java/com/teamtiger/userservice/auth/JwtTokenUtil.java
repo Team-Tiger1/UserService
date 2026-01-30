@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
@@ -21,10 +24,10 @@ public class JwtTokenUtil {
     private String key;
 
     // Access token expires in 15 minutes
-    private static final long ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000;
+    private static final Duration ACCESS_TOKEN_EXPIRY = Duration.of(15, ChronoUnit.MINUTES);
 
     // Refresh token expires in 7 days
-    public static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+    public static final Duration REFRESH_TOKEN_EXPIRY = Duration.of(6, ChronoUnit.MONTHS);
 
 
     public String generateAccessToken(UUID uuid, Role role) {
@@ -39,7 +42,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY.toMillis()))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
                 .compact();
     }
@@ -56,7 +59,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY.toMillis()))
                 .signWith(SignatureAlgorithm.HS256, hmacKey)
                 .compact();
     }
