@@ -26,14 +26,13 @@ public class JwtTokenUtil {
     // Access token expires in 15 minutes
     private static final Duration ACCESS_TOKEN_EXPIRY = Duration.of(15, ChronoUnit.MINUTES);
 
-    // Refresh token expires in 7 days
-    public static final Duration REFRESH_TOKEN_EXPIRY = Duration.of(6, ChronoUnit.MONTHS);
+    // Refresh token expires in ~6 months
+    public static final Duration REFRESH_TOKEN_EXPIRY = Duration.of(180, ChronoUnit.DAYS);
 
     private Key hmacKey;
 
     @PostConstruct
     private void init() {
-        System.out.println(key);
         byte[] decodedKey = Base64.getDecoder().decode(key);
         this.hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
     }
