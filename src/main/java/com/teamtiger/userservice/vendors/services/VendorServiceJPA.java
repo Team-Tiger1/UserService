@@ -163,6 +163,7 @@ public class VendorServiceJPA implements VendorService{
 
         List<Vendor> vendorEntities = vendors.stream()
                 .map(dto -> Vendor.builder()
+                        .id(dto.getVendorId())
                         .name(dto.getName())
                         .email(dto.getEmail())
                         .description(dto.getDescription())
