@@ -6,11 +6,4 @@ springdoc:
     path: /userservice/v3/api-docs
 
 
-spring:
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
 
