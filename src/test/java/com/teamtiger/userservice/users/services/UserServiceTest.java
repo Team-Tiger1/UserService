@@ -76,7 +76,7 @@ import com.teamtiger.userservice.users.repositories.UserRepository;
 
 //unit tests for UserServicesJPA
 @ExtendWith(MockitoExtension.class)
-class UserServiceJPATest {
+class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;

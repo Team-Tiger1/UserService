@@ -1,6 +1,6 @@
 // //.\mvnw.cmd test -Dtest=UserControllerTest
 
-package com.teamtiger.userservice.users.services;
+package com.teamtiger.userservice.users.controllers;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -9,6 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.UUID;
 
+import com.teamtiger.userservice.users.services.UserService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.apachecommons.CommonsLog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,27 +22,22 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.teamtiger.userservice.users.controllers.UserController;
 import com.teamtiger.userservice.users.exceptions.EmailAlreadyTakenException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.exceptions.UsernameAlreadyTakenException;
 import com.teamtiger.userservice.users.models.*;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
+@CommonsLog
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
     
-
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-
-    
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private UserService userService;
@@ -63,6 +61,8 @@ public class UserControllerTest {
                 .email("test@exeter.ac.uk")
                 .password("password123")
                 .build();
+
+
 
         loginDTO = new LoginDTO();
         loginDTO.setEmail("test@exeter.ac.uk");
@@ -93,7 +93,7 @@ public class UserControllerTest {
     }
 
 
-    //test sucessful path of user registration
+    //test successful path of user registration
     //should return 200 and set cookies
     @Test
     public void testRegisterUser_Success() throws Exception{
@@ -111,7 +111,7 @@ public class UserControllerTest {
                 .andExpect(cookie().value("refreshToken", "refreshToken123"))
                 .andExpect(cookie().httpOnly("refreshToken", true))
                 .andExpect(cookie().secure("refreshToken", true))
-                //these should match the saved outout. $. is the path
+                //these should match the saved output. $. is the path
                 .andExpect(jsonPath("$.id").value(testUserId.toString()))
                 .andExpect(jsonPath("$.username").value("testUsername"))
                 .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
