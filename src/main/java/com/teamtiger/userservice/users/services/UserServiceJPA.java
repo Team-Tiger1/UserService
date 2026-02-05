@@ -185,6 +185,7 @@ public class UserServiceJPA implements UserService {
                 .toList();
 
         List<User> savedUsers = userRepository.saveAll(entityList);
+        userRepository.flush();
 
         //Index users for faster lookup
         Map<UUID, User> userMap = savedUsers.stream()
