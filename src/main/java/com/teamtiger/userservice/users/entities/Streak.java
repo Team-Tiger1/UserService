@@ -19,11 +19,6 @@ public class Streak {
     @Column(name = "user_id")
     private UUID userId;
 
-    @OneToOne(optional = false)
-    @MapsId
-    @JoinColumn(name = "user_id")
-    private User user;
-
     private Integer streak;
 
     private LocalDateTime lastReservation;
