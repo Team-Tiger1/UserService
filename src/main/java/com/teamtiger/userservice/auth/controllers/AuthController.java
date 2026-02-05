@@ -33,6 +33,7 @@ public class AuthController {
         }
 
         catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
