@@ -17,8 +17,8 @@ import java.util.UUID;
 public class Vendor {
 
     @Id
-//    @GeneratedValue(generator = "UUID")
-//    @UuidGenerator
+    @GeneratedValue(generator = "UUID")
+    @UuidGenerator
     @Column(name = "vendor_id", updatable = false, nullable = false)
     private UUID id;
 
