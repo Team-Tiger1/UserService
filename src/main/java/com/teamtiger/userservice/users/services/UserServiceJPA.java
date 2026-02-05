@@ -178,35 +178,31 @@ public class UserServiceJPA implements UserService {
         }
 
         List<User> entityList = users.stream()
-                .peek(dto -> System.out.println(dto.getId()))
+                .peek(dto -> System.out.println(dto.getUserId()))
                 .map(dto -> User.builder()
-                        .id(dto.getId())
+                        .id(dto.getUserId())
                         .username(usernameGenerator.generateUsername())
                         .email(dto.getEmail())
                         .password(passwordHasher.hashPassword(dto.getPassword()))
                         .build())
                 .toList();
 
-        System.out.println("Generated List");
 
         userRepository.saveAll(entityList);
 
-        System.out.println("Save Users");
 
         //Create streaks and save them
         List<Streak> streakList = users.stream()
                 .filter(dto -> dto.getStreak() > 0)
                 .map(dto -> Streak.builder()
-                        .userId(dto.getId())
+                        .userId(dto.getUserId())
                         .streak(dto.getStreak())
                         .lastReservation(dto.getLastReservationTime())
                         .build())
                 .toList();
 
-        System.out.println("load Streaks");
 
         streakRepository.saveAll(streakList);
-        System.out.println("save streaks");
     }
 
     private static class UserMapper {

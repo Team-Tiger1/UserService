@@ -168,7 +168,7 @@ public class UserController {
 
     @Operation(summary = "Allows for bulk data transfer for seeded data")
     @PostMapping("/internal")
-    public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @RequestBody List<UserSeedDTO> users) {
+    public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @Valid @RequestBody List<UserSeedDTO> users) {
         try {
             String token = authToken.replace("Bearer ", "");
             userService.loadSeededUsers(token, users);

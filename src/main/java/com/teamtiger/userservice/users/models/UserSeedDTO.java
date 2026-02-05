@@ -16,7 +16,7 @@ import java.util.UUID;
 public class UserSeedDTO {
 
     @NotNull
-    private UUID id;
+    private UUID userId;
 
     @NotBlank
     @Email

@@ -24,8 +24,8 @@ import java.util.UUID;
 public class User {
 
     @Id
-//    @GeneratedValue(generator = "UUID")
-//    @UuidGenerator
+    @GeneratedValue(generator = "UUID")
+    @UuidGenerator
     @Column(name = "user_id", updatable = false, nullable = false)
     private UUID id;
 
@@ -37,14 +37,6 @@ public class User {
 
     @Column(nullable = false)
     private String password;
-
-//    @ManyToMany
-//    @JoinTable(
-//            name = "user_badges",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "badge_id")
-//    )
-//    private Set<Badge> badges;
 
     @Version
     private Long version;
