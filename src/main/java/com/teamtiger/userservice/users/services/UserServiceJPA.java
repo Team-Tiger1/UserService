@@ -182,16 +182,26 @@ public class UserServiceJPA implements UserService {
                         .build())
                 .toList();
 
+        List<User> savedUsers = userRepository.saveAll(entityList);
+
+        //Index users for faster lookup
+        Map<UUID, User> userMap = savedUsers.stream()
+            .collect(Collectors.toMap(user -> user.getId(), user -> user));
+
+
+        //Create streaks and save them
         List<Streak> streakList = users.stream()
                 .filter(dto -> dto.getStreak() > 0)
-                .map(dto -> Streak.builder()
-                        .userId(dto.getId())
+                .map(dto -> {
+                    User user = userMap.get(dto.getId());
+                    return Streak.builder()
+                        .user(user)
                         .streak(dto.getStreak())
                         .lastReservation(dto.getLastReservationTime())
                         .build())
+                })
                 .toList();
 
-        userRepository.saveAll(entityList);
         streakRepository.saveAll(streakList);
     }
 
