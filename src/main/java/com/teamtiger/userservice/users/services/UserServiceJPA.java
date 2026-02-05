@@ -178,8 +178,8 @@ public class UserServiceJPA implements UserService {
         }
 
         List<User> entityList = users.stream()
+                .peek(dto -> System.out.println(dto.getId()))
                 .map(dto -> User.builder()
-
                         .id(dto.getId())
                         .username(usernameGenerator.generateUsername())
                         .email(dto.getEmail())
