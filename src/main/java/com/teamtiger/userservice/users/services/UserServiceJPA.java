@@ -177,6 +177,11 @@ public class UserServiceJPA implements UserService {
 
         List<User> entityList = users.stream()
                 .map(dto -> User.builder()
+                        .peek(dto -> {
+                            if(dto.getId() == null) {
+                                System.out.println("IS NULL ---------------------------------------------------------------------------------")
+                            }
+                        })
                         .id(dto.getId())
                         .username(usernameGenerator.generateUsername())
                         .email(dto.getEmail())
