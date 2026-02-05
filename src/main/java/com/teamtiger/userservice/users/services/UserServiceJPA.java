@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -152,6 +153,13 @@ public class UserServiceJPA implements UserService {
                             .streak(0)
                             .build();
         });
+
+
+        if(streak.getLastReservation().isBefore(LocalDateTime.now().minusWeeks(1))) {
+            //Reset streak
+            streak.setStreak(0);
+            streak = streakRepository.save(streak);
+        }
 
         return new StreakDTO(streak.getStreak());
 
