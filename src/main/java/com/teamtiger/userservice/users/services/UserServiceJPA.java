@@ -115,7 +115,7 @@ public class UserServiceJPA implements UserService {
 
         //Update email
         String email = updateUserDTO.getEmail();
-        if (email != null && !userRepository.existsByEmail(email)) {
+        if (!userRepository.existsByEmail(email)) {
             user.setEmail(email);
         }
 
@@ -151,11 +151,9 @@ public class UserServiceJPA implements UserService {
             throw new AuthorizationException();
         }
 
-        Streak streak = streakRepository.findById(userId).orElseGet(() -> {
-            return Streak.builder()
-                    .streak(0)
-                    .build();
-        });
+        Streak streak = streakRepository.findById(userId).orElseGet(() -> Streak.builder()
+                .streak(0)
+                .build());
 
 
         if (streak.getLastReservation().isBefore(LocalDateTime.now().minusWeeks(1))) {
