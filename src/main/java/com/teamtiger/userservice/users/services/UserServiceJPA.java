@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -186,7 +188,7 @@ public class UserServiceJPA implements UserService {
 
         //Index users for faster lookup
         Map<UUID, User> userMap = savedUsers.stream()
-            .collect(Collectors.toMap(user -> user.getId(), user -> user));
+            .collect(Collectors.toMap(User::getId, user -> user));
 
 
         //Create streaks and save them
