@@ -179,7 +179,7 @@ public class UserServiceJPA implements UserService {
                 .map(dto -> User.builder()
                         .peek(dto -> {
                             if(dto.getId() == null) {
-                                System.out.println("IS NULL ---------------------------------------------------------------------------------")
+                                System.out.println("IS NULL ---------------------------------------------------------------------------------");
                             }
                         })
                         .id(dto.getId())
