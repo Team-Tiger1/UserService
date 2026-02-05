@@ -187,7 +187,11 @@ public class UserServiceJPA implements UserService {
                         .build())
                 .toList();
 
+        System.out.println("Generated List");
+
         userRepository.saveAll(entityList);
+
+        System.out.println("Save Users");
 
         //Create streaks and save them
         List<Streak> streakList = users.stream()
@@ -199,7 +203,10 @@ public class UserServiceJPA implements UserService {
                         .build())
                 .toList();
 
+        System.out.println("load Streaks");
+
         streakRepository.saveAll(streakList);
+        System.out.println("save streaks");
     }
 
     private static class UserMapper {
