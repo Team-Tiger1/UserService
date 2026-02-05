@@ -198,7 +198,7 @@ public class UserServiceJPA implements UserService {
                         .user(user)
                         .streak(dto.getStreak())
                         .lastReservation(dto.getLastReservationTime())
-                        .build())
+                        .build());
                 })
                 .toList();
 
