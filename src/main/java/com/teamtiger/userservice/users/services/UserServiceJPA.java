@@ -12,6 +12,7 @@ import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +36,7 @@ public class UserServiceJPA implements UserService {
         String username = usernameGenerator.generateUsername();
 
         //Check if email is already taken
-        if(userRepository.existsByEmail(userDTO.getEmail())) {
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
             throw new EmailAlreadyTakenException();
         }
 
@@ -76,7 +77,7 @@ public class UserServiceJPA implements UserService {
 
         //Check if password matches hashed version
         boolean doesPasswordMatch = passwordHasher.matches(loginDTO.getPassword(), user.getPassword());
-        if(!doesPasswordMatch) {
+        if (!doesPasswordMatch) {
             throw new PasswordIncorrectException();
         }
 
@@ -108,13 +109,13 @@ public class UserServiceJPA implements UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         //If there are not new values return user entity
-        if(updateUserDTO.getEmail() == null) {
+        if (updateUserDTO.getEmail() == null) {
             return UserMapper.toDTO(user);
         }
 
         //Update email
         String email = updateUserDTO.getEmail();
-        if(email != null && !userRepository.existsByEmail(email)) {
+        if (email != null && !userRepository.existsByEmail(email)) {
             user.setEmail(email);
         }
 
@@ -131,7 +132,7 @@ public class UserServiceJPA implements UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         boolean isOldPasswordCorrect = passwordHasher.matches(passwordDTO.getOldPassword(), user.getPassword());
-        if(!isOldPasswordCorrect) {
+        if (!isOldPasswordCorrect) {
             throw new PasswordIncorrectException();
         }
 
@@ -146,18 +147,18 @@ public class UserServiceJPA implements UserService {
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
-        if(!role.equals("USER")) {
+        if (!role.equals("USER")) {
             throw new AuthorizationException();
         }
 
         Streak streak = streakRepository.findById(userId).orElseGet(() -> {
             return Streak.builder()
-                            .streak(0)
-                            .build();
+                    .streak(0)
+                    .build();
         });
 
 
-        if(streak.getLastReservation().isBefore(LocalDateTime.now().minusWeeks(1))) {
+        if (streak.getLastReservation().isBefore(LocalDateTime.now().minusWeeks(1))) {
             //Reset streak
             streak.setStreak(0);
             streak = streakRepository.save(streak);
@@ -167,21 +168,18 @@ public class UserServiceJPA implements UserService {
 
     }
 
+    @Transactional
     @Override
     public void loadSeededUsers(String accessToken, List<UserSeedDTO> users) {
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
-        if(!role.equals("INTERNAL")) {
+        if (!role.equals("INTERNAL")) {
             throw new AuthorizationException();
         }
 
         List<User> entityList = users.stream()
                 .map(dto -> User.builder()
-                        .peek(dto -> {
-                            if(dto.getId() == null) {
-                                System.out.println("IS NULL ---------------------------------------------------------------------------------");
-                            }
-                        })
+
                         .id(dto.getId())
                         .username(usernameGenerator.generateUsername())
                         .email(dto.getEmail())
@@ -190,11 +188,10 @@ public class UserServiceJPA implements UserService {
                 .toList();
 
         List<User> savedUsers = userRepository.saveAll(entityList);
-        userRepository.flush();
 
         //Index users for faster lookup
         Map<UUID, User> userMap = savedUsers.stream()
-            .collect(Collectors.toMap(User::getId, user -> user));
+                .collect(Collectors.toMap(User::getId, user -> user));
 
 
         //Create streaks and save them
@@ -203,10 +200,11 @@ public class UserServiceJPA implements UserService {
                 .map(dto -> {
                     User user = userMap.get(dto.getId());
                     return Streak.builder()
-                        .user(user)
-                        .streak(dto.getStreak())
-                        .lastReservation(dto.getLastReservationTime())
-                        .build();
+                            .userId(dto.getId())
+                            .user(user)
+                            .streak(dto.getStreak())
+                            .lastReservation(dto.getLastReservationTime())
+                            .build();
                 })
                 .toList();
 
@@ -232,7 +230,6 @@ public class UserServiceJPA implements UserService {
                     .build();
         }
     }
-
 
 
 }
