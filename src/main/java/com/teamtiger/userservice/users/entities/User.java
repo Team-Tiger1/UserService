@@ -46,10 +46,8 @@ public class User {
     )
     private Set<Badge> badges;
 
-    @OneToOne(
-            mappedBy = "user",
-            orphanRemoval = true
-    )
+    @OneToOne(orphanRemoval = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private Streak streak;
 
     @Version
