@@ -21,7 +21,6 @@ import java.util.UUID;
 public class ReservationCollectedListener {
 
     private final StreakRepository streakRepository;
-    private final UserRepository userRepository;
 
     @RabbitListener(queues = UserRabbitMQConfig.QUEUE)
     public void handle(@NonNull ReservationCollectedEvent event) {
@@ -30,22 +29,17 @@ public class ReservationCollectedListener {
         UUID userId = event.userId();
         LocalDateTime collectedTime = event.reservationCollected();
 
-        User userReference = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        Streak streak = streakRepository.findById(userId).orElseGet(() -> {
-            return streakRepository.save(
-                    Streak.builder()
-                    .user(userReference)
-                    .streak(1)
-                    .lastReservation(collectedTime)
-                    .build());
-        });
+        Streak streak = streakRepository.findById(userId).orElseGet(() -> streakRepository.save(
+                Streak.builder()
+                        .userId(userId)
+                        .streak(1)
+                        .lastReservation(collectedTime)
+                        .build()));
 
         //Calculate whether a week has passed since the last reservation
         long daysElapsed = Duration.between(streak.getLastReservation(), collectedTime).toDays();
 
-        if(daysElapsed >= 7 && daysElapsed < 14) {
+        if (daysElapsed >= 7 && daysElapsed < 14) {
             int currentStreak = streak.getStreak();
             streak.setStreak(currentStreak + 1);
             streak.setLastReservation(collectedTime);
