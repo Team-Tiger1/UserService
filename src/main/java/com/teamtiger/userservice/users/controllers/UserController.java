@@ -32,7 +32,7 @@ public class UserController {
             //Create the Cookie
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", userRegisterDTO.getRefreshToken())
                     .httpOnly(true)
-                    .secure(true) //CHANGE TO true for PRODUCTION
+                    .secure(true)
                     .sameSite("None")
                     .path("/")
                     .maxAge(JwtTokenUtil.REFRESH_TOKEN_EXPIRY)

@@ -155,6 +155,10 @@ public class UserServiceJPA implements UserService {
                 .streak(0)
                 .build());
 
+        if(streak.getLastReservation() == null) {
+            return new StreakDTO(streak.getStreak());
+        }
+
 
         if (streak.getLastReservation().isBefore(LocalDateTime.now().minusWeeks(1))) {
             //Reset streak
