@@ -8,6 +8,11 @@ This service handles:
 - Authentication
 
 The User Service handles all user and vendor details and generates tokens for clients, so they can access endpoints on all the services. It manages logins and registering and accessing general vendor data. It receives messages from the RabbitMQ instance when a User streak needs to be updated.
+The Image below highlights where in the architecture this service operates.
+
+<p>
+  <img src="Architecture_UserService.png" alt="Project Logo" height="500px">
+</p>
 
 ## Documentation
 
