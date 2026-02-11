@@ -36,6 +36,68 @@ The User Service handles all user and vendor details and generates tokens for cl
 
 
 ## How to Run Tests
+> Intructions for **all microservices** can be found on the [**LocalDeployment**](https://github.com/Team-Tiger1/LocalDeployment) repo but the below instructions are for running just the User service tests
+### Requirements for running tests
+- **Git**
+- **Java JDK 17+**
+
+## Run Tests
+
+### Run Tests (Windows)
+
+1. Open Terminal, Clone and open this repository
+```Bash
+  git clone https://github.com/Team-Tiger1/userservice
+
+  cd userservice
+```
+
+2. run the following command to run tests
+```Bash
+    ./mvnw.cmd test
+```
+3. If successful you should see somthing similar to
+```Bash
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:33 min
+[INFO] Finished at: 2026-02-11T21:48:58Z
+[INFO] ------------------------------------------------------------------------
+```
+
+###  Run Tests (Linux/MacOs)
+1. Clone this repository
+``` Bash
+    git clone https://github.com/Team-Tiger1/userservice
+
+  cd userservice
+```
+
+2. run the following commands to give access for maven to be executable and to run tests
+```Bash
+    chmod +x mvnw
+    ./mvnw test
+```
+
+3. If successful you should see somthing similar to
+```Bash
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:33 min
+[INFO] Finished at: 2026-02-11T21:48:58Z
+[INFO] ------------------------------------------------------------------------
+```
+
 
 
 ## Contribution
@@ -69,7 +131,11 @@ The User Service handles all user and vendor details and generates tokens for cl
 
 **Author: Jed Leas**
 
-<br>
+- Setting up all CI/CD workflows to handle
+  1. Automatic testing on push of main branch on the user service repo
+  2. Automatic Deployment onto k3s with zero downtime on compleation of automatic testing so broken code won't make it to deployment
+- Set up the connection to the Postgres database, and RabbitMq
+
 
 
 **Author: Ivy Figari**
