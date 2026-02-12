@@ -1,3 +1,4 @@
+# Swagger OpenAPI endpoint config
 springdoc:
   swagger-ui:
     path: /userservice/docs
