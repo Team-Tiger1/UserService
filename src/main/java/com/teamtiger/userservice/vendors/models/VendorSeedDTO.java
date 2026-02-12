@@ -9,7 +9,9 @@ import lombok.Getter;
 
 import java.util.UUID;
 
-
+/**
+ * A DTO used for seeding generated vendors into the database
+ */
 @Getter
 @Builder
 @AllArgsConstructor

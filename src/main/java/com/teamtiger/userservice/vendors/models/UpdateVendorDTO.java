@@ -3,10 +3,13 @@ package com.teamtiger.userservice.vendors.models;
 import com.teamtiger.userservice.vendors.VendorConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@Getter
+/**
+ * A DTO for updating vendor details (all fields are optional)
+ */
+@Data
 @RequiredArgsConstructor
 public class UpdateVendorDTO {
 

@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * A DTO used for a vendor to login
+ */
 @Getter
 @AllArgsConstructor
 public class LoginVendorDTO {

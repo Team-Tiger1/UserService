@@ -24,9 +24,15 @@ public class VendorServiceJPA implements VendorService{
     private final PasswordHasher passwordHasher;
     private final JwtTokenUtil jwtTokenUtil;
 
+    /**
+     * Creates a new vendor and stores the record on the database
+     * @param createVendorDTO A valid request body with the information for the vendor account
+     * @return A VendorRegisterDTO that has the vendor information and refresh token
+     */
     @Override
     public VendorRegisterDTO createVendor(CreateVendorDTO createVendorDTO) {
 
+        //Format username and check if taken
         String trimmedCompanyName = createVendorDTO.getName().trim();
         boolean isNameTaken = vendorRepository.existsByName(trimmedCompanyName);
         if(isNameTaken) {
@@ -60,9 +66,15 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
-
+    /**
+     * Allows a vendor to login, and checks a vendor details against the database
+     * @param loginVendorDTO A valid login request body
+     * @return A VendorRegisterDTO that has the vendor record and refresh token
+     */
     @Override
     public VendorRegisterDTO loginVendor(LoginVendorDTO loginVendorDTO) {
+
+        //Format email and query database
         String trimmedEmail = loginVendorDTO.getEmail().trim();
 
         Vendor vendor = vendorRepository.findByEmail(trimmedEmail)
@@ -85,14 +97,29 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
-
+    /**
+     * Updates a vendors database record with the details provided
+     * @param accessToken An access token (has vendorId in the payload)
+     * @param updateVendorDTO Has the details that are being updated
+     * @return The new vendor details after they've been updated
+     */
     @Override
     public VendorDTO updateVendorDetails(UpdateVendorDTO updateVendorDTO, String accessToken) {
 
+        //Check role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Get vendorId and query database
         UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
 
         Vendor savedVendor = vendorRepository.findById(vendorId)
                 .orElseThrow(CompanyNotFoundException::new);
+
+        //Update all details that aren't null
 
         if(updateVendorDTO.getCompanyName() != null) {
             savedVendor.setName(updateVendorDTO.getCompanyName());
@@ -123,14 +150,27 @@ public class VendorServiceJPA implements VendorService{
         return VendorMapper.toDTO(updatedVendor);
     }
 
-
+    /**
+     * Updates a vendor's password, given that their old one is correct
+     * @param accessToken An access token (has vendorId in the payload)
+     * @param passwordDTO The new password and old password
+     */
     @Override
     public void updatePassword(UpdateVendorPasswordDTO passwordDTO, String accessToken) {
 
+        //Check role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract vendorId and query database
         UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(CompanyNotFoundException::new);
 
+        //Check if plain text password matches stored one
         boolean doesOldPasswordMatch = passwordHasher.matches(passwordDTO.getOldPassword(), vendor.getPassword());
         if(!doesOldPasswordMatch) {
             throw new PasswordIncorrectException();
@@ -143,8 +183,22 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
+    /**
+     * Gets the vendor's details from the database
+     * @param accessToken An access token (has vendorId in the payload)
+     * @return vendor details from the database
+     */
     @Override
     public VendorDTO getVendorProfile(String accessToken) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract vendorId and query database
         UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
 
         Vendor savedVendor = vendorRepository.findById(vendorId)
@@ -153,14 +207,22 @@ public class VendorServiceJPA implements VendorService{
         return VendorMapper.toDTO(savedVendor);
     }
 
+    /**
+     * Saves seeded vendors to the database
+     * @param accessToken An access token (has vendorId in the payload)
+     * @param vendors List of generated vendors
+     */
     @Override
     public void loadSeededData(String accessToken, List<VendorSeedDTO> vendors) {
+
+        //Check role is valid
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
         if(!role.equals("INTERNAL")) {
             throw new AuthorizationException();
         }
 
+        //Convert request data to vendor entities
         List<Vendor> vendorEntities = vendors.stream()
                 .map(dto -> Vendor.builder()
                         .id(dto.getVendorId())
@@ -180,11 +242,16 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
+    /**
+     * Gets all vendors from the database
+     * @return A list of vendors
+     */
     @Override
     public List<BasicVendorDTO> getAllVendors() {
 
         List<Vendor> vendorList = vendorRepository.findAll();
 
+        //Only extract the basic data and convert to DTOs
         return vendorList.stream()
                 .map(entity -> BasicVendorDTO.builder()
                         .vendorId(entity.getId())
@@ -195,14 +262,22 @@ public class VendorServiceJPA implements VendorService{
 
     }
 
+    /**
+     * Get detailed vendor information from the database
+     * @param vendorId The vendors UUID
+     */
     @Override
     public VendorDTO getDetailedVendorInfo(UUID vendorId) {
+
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(CompanyNotFoundException::new);
 
         return VendorMapper.toDTO(vendor);
     }
 
+    /**
+     * Maps database entities to DTOs
+     */
     private static class VendorMapper {
 
         public static VendorDTO toDTO(Vendor vendor) {
@@ -214,18 +289,6 @@ public class VendorServiceJPA implements VendorService{
                     .postcode(vendor.getPostcode())
                     .phoneNumber(vendor.getPhoneNumber())
                     .category(vendor.getCategory())
-                    .build();
-        }
-
-        public static Vendor toEntity(VendorDTO vendorDTO) {
-            return Vendor.builder()
-                    .name(vendorDTO.getCompanyName())
-                    .email(vendorDTO.getEmail())
-                    .description(vendorDTO.getDescription())
-                    .streetAddress(vendorDTO.getStreetAddress())
-                    .postcode(vendorDTO.getPostcode())
-                    .phoneNumber(vendorDTO.getPhoneNumber())
-                    .category(vendorDTO.getCategory())
                     .build();
         }
 

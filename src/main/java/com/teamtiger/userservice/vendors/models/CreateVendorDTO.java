@@ -8,6 +8,9 @@ import lombok.Builder;
 import lombok.Getter;
 
 
+/**
+ * A DTO used for creating a new vendor
+ */
 @Getter
 @Builder
 @AllArgsConstructor

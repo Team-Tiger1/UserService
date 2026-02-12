@@ -1,5 +1,8 @@
 package com.teamtiger.userservice.vendors.entities;
 
+/**
+ * All the different categories a vendor is classified by
+ */
 public enum VendorCategory {
     SUPERMARKET,
     CAFE,

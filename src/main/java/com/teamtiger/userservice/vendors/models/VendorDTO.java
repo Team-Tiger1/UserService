@@ -1,10 +1,12 @@
 package com.teamtiger.userservice.vendors.models;
 
-
 import com.teamtiger.userservice.vendors.entities.VendorCategory;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * A DTO used for getting detailed information about a vendor
+ */
 @Data
 @Builder
 public class VendorDTO {

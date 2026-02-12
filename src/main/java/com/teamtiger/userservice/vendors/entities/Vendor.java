@@ -7,6 +7,9 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
+/**
+ * A Spring Entity for the vendor database table
+ */
 @Entity
 @Getter
 @Setter

@@ -1,5 +1,8 @@
 package com.teamtiger.userservice.vendors;
 
+/**
+ * Constants used throughout the vendor package
+ */
 public class VendorConstants {
 
     public final static int PHONE_NUMBER_LENGTH = 10;
