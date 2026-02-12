@@ -106,13 +106,6 @@ public class UserServiceJPA implements UserService {
     @Override
     public UserDTO getUserProfile(String accessToken) {
 
-        //Check role
-        String role = jwtTokenUtil.getRoleFromToken(accessToken);
-
-        if (!role.equals("USER")) {
-            throw new AuthorizationException();
-        }
-
         //Extract userId and query database
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
 

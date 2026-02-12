@@ -9,6 +9,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.teamtiger.userservice.users.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,47 +34,6 @@ import com.teamtiger.userservice.users.models.CreateUserDTO;
 import com.teamtiger.userservice.users.models.LoginDTO;
 import com.teamtiger.userservice.users.models.UserDTO;
 import com.teamtiger.userservice.users.models.UserRegisterDTO;
-import com.teamtiger.userservice.users.repositories.UserRepository;
-
-
-
-
-// package com.teamtiger.userservice.services;
-
-// import com.teamtiger.userservice.users.models.CreateUserDTO;
-// import com.teamtiger.userservice.users.models.UserRegisterDTO;
-// import com.teamtiger.userservice.users.services.UserService;
-// import org.junit.jupiter.api.Assertions;
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.context.SpringBootTest;
-// import org.springframework.transaction.annotation.Transactional;
-
-// import com.teamtiger.userservice.users.exceptions.*;
-// import static org.junit.jupiter.api.Assertions.*;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-
-// import static org.mockito.Mockito.when;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.never;
-// import static org.mockito.Mockito.any;
-
-// import com.teamtiger.userservice.auth.JwtTokenUtil;
-// import com.teamtiger.userservice.auth.PasswordHasher;
-// import com.teamtiger.userservice.auth.models.Role;
-
-// import com.teamtiger.userservice.users.entities.User;
-// import com.teamtiger.userservice.users.repositories.UserRepository;
-
-// import org.junit.jupiter.api.BeforeEach;
-// import org.mockito.junit.MockitoExtension;
-
-// import java.util.Optional;
-// import java.util.UUID;
-// import static org.mockito.ArgumentMatchers.*;
-// import static org.mockito.Mockito.*;
 
 //unit tests for UserServicesJPA
 @ExtendWith(MockitoExtension.class)
@@ -101,7 +62,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         testUserId = UUID.randomUUID(); //make a new UUID for each test, used for testUser
-        
+
         createUserDTO = CreateUserDTO.builder()
                 .email("test@exeter.ac.uk")
                 .password("password123")
@@ -230,7 +191,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testGetUserProfile_invlidUser() {
+    void testGetUserProfile_invalidUser() {
         String accessToken = "accessToken123";
         when(jwtTokenUtil.getUuidFromToken(accessToken)).thenReturn(testUserId);
         when(userRepository.findById(testUserId)).thenReturn(Optional.empty());

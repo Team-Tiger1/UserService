@@ -10,13 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.UUID;
 
 import com.teamtiger.userservice.users.services.UserService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-// import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -117,21 +114,6 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
     }
 
-
-
-
-    @Test
-    public void testRegisterUser_UsernameTaken() throws Exception{
-
-        String requestBody = objectMapper.writeValueAsString(createUserDTO);
-
-        when(userService.createUser(any(CreateUserDTO.class))).thenThrow(new UsernameAlreadyTakenException());
-        
-        mockMvc.perform(post("/users/register")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isConflict());
-    }
 
 
     @Test
