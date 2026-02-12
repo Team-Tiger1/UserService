@@ -141,6 +141,7 @@ The Image below highlights where in the architecture this service operates.
   2. Automatic Deployment onto k3s with zero downtime on compleation of automatic testing so broken code won't make it to deployment
 - Set up the connection to the Postgres database, and RabbitMq
 
-
+<br>
 
 **Author: Ivy Figari**
+
