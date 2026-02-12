@@ -16,6 +16,9 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * Spring Boot Component that handles generation and signing of JWT tokens
+ */
 @Component
 public class JwtTokenUtil {
 
@@ -31,13 +34,22 @@ public class JwtTokenUtil {
 
     private Key hmacKey;
 
+    /**
+     * On startup, load and decode the secret key into memory
+     */
     @PostConstruct
     private void init() {
         byte[] decodedKey = Base64.getDecoder().decode(key);
         this.hmacKey = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS256.getJcaName());
     }
 
-
+    /**
+     * Method responsible for generating new access tokens
+     * The UUID and Role is embedded in the payload
+     * @param uuid The Id of the user or vendor (from the database)
+     * @param role The type of client (USER or VENDOR)
+     * @return A string of the new access token
+     */
     public String generateAccessToken(UUID uuid, Role role) {
 
         Claims claims = Jwts.claims();
@@ -53,6 +65,13 @@ public class JwtTokenUtil {
     }
 
 
+    /**
+     * Method responsible for generating new refresh tokens
+     * The UUID and Role is embedded in the payload
+     * @param uuid The Id of the user or vendor (from the database)
+     * @param role The type of client (USER or VENDOR)
+     * @return A string of the new refresh token
+     */
     public String generateRefreshToken(UUID uuid, Role role) {
 
         Claims claims = Jwts.claims().setSubject(uuid.toString());
@@ -67,14 +86,29 @@ public class JwtTokenUtil {
     }
 
 
+    /**
+     * Extracts the UUID from the token payload
+     * @param token The access or refresh token
+     * @return The UUID of the User or Vendor
+     */
     public UUID getUuidFromToken(String token) {
         return UUID.fromString(getClaimsFromToken(token).getSubject());
     }
 
+    /**
+     * Extracts the Role from the token payload
+     * @param token The access or refresh token
+     * @return The client Role type (String)
+     */
     public String getRoleFromToken(String token) {
         return (String) getClaimsFromToken(token).get("role");
     }
 
+    /**
+     * Extract the claims from the token payload
+     * @param token The access or refresh token
+     * @return A Claims object that contains information about the client
+     */
     private Claims getClaimsFromToken(String token) {
 
         return Jwts.parserBuilder()

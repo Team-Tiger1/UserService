@@ -21,11 +21,18 @@ public class AuthServiceJPA implements AuthService{
     private final VendorRepository vendorRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
+    /**
+     * Method that generates a new access token for a user or vendor
+     * It extracts the Id from the refresh token and checks the database
+     * Then it generates the new access token
+     * @param refreshToken The bearer token that is stored on the clients device in the long-term
+     * @return An AccessTokenDTO which has the new access token
+     */
     @Override
     @Transactional
     public AccessTokenDTO getAccessToken(String refreshToken) {
 
-        //Extract username from JWT token
+        //Extract username and role from JWT token
         UUID uuid = jwtTokenUtil.getUuidFromToken(refreshToken);
         String role = jwtTokenUtil.getRoleFromToken(refreshToken); //Users only have 1 role
 

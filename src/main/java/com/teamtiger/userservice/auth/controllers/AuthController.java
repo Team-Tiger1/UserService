@@ -20,6 +20,13 @@ public class AuthController {
 
     private final AuthServiceJPA authServiceJPA;
 
+    /**
+     * Method for Users and Vendors to refresh their access token using their refresh token
+     * @param refreshToken Bearer token that the client stores for a long period of time
+     * @return A ResponseEntity with the new access token in the body,
+     * returns 404 if the User or Vendor doesn't exist,
+     * returns 500 if a different error occurs
+     */
     @Operation(summary = "Creates an access token given a refresh token")
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@NotBlank @CookieValue("refreshToken") String refreshToken) {
@@ -33,7 +40,6 @@ public class AuthController {
         }
 
         catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
