@@ -23,6 +23,13 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Processes a User's request to register
+     * @param createUserDTO A valid request body with the required details
+     * @return A ResponseEntity that returns 200 if successful and sets a refresh cookie on the client's device
+     * 409 if the email used already has an account
+     * 500 if a different error occurs
+     */
     @Operation(summary = "Creates a new User")
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
@@ -44,7 +51,7 @@ public class UserController {
                     .body(userRegisterDTO.getUserDTO());
         }
 
-        catch (UsernameAlreadyTakenException | EmailAlreadyTakenException e) {
+        catch (EmailAlreadyTakenException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
@@ -53,6 +60,14 @@ public class UserController {
         }
     }
 
+    /**
+     * Processes a User's request to Login
+     * @param loginDTO A valid request body with details to login with
+     * @return A ResponseEntity that returns 200 if successful and sets a refresh cookie on the client's device
+     * 404 if the user was not found in the database
+     * 401 if the password given was incorrect
+     * 500 if a different error occurs
+     */
     @Operation(summary = "Allows a User to Login")
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO) {
@@ -87,9 +102,17 @@ public class UserController {
         }
     }
 
+    /**
+     * Processes a User's request to get their profile details
+     * @param authHeader A bearer access token
+     * @return A ResponseEntity that returns 200 with the user's details
+     * 404 if the user was not found
+     * 401 if a vendor tries to access the endpoint
+     * 500 if a different error occurred
+     */
     @Operation(summary = "Allows a User to get their own profile")
     @GetMapping("/me")
-    public ResponseEntity<?> getUserProfile(@NotBlank @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String authHeader) {
         try {
             String accessToken = authHeader.replace("Bearer ", "");
 
@@ -101,12 +124,25 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    @Operation(summary = "Allows a user to update their user details")
+    /**
+     * Processes a Users request to update their email address
+     * @param authHeader A bearer access token
+     * @param updateUserDTO A wrapper for the valid email address
+     * @return A ResponseEntity that returns 200 if the email was updated successfully
+     * 404 if the User was not found
+     * 401 if a vendor tries to access the endpoint
+     * 500 if a different error occurred
+     */
+    @Operation(summary = "Allows a user to update their email address")
     @PatchMapping("/me")
     public ResponseEntity<?> updateUserProfile(@NotBlank @RequestHeader("Authorization") String authHeader,
                                                @Valid @RequestBody UpdateUserDTO updateUserDTO) {
@@ -122,11 +158,24 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
+    /**
+     * Processes a User's request to update their password
+     * @param authHeader A bearer access token
+     * @param passwordDTO A new valid password and their old password
+     * @return A ResponseEntity that returns 200 if the password was updated successfully
+     * 401 if the old password entered was incorrect, or a vendor tries to access the endpoint
+     * 404 if the user was not found
+     * 500 if a different error occurred
+     */
     @Operation(summary = "Allows a User to change their password")
     @PatchMapping("/password")
     public ResponseEntity<?> updateUserPassword(@RequestHeader("Authorization") String authHeader,
@@ -138,16 +187,26 @@ public class UserController {
             return ResponseEntity.noContent().build();
         }
 
-        catch (PasswordIncorrectException e) {
+        catch (PasswordIncorrectException | AuthorizationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
 
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
+    /**
+     * Processes a User's request to get their current streak
+     * @param authHeader A bearer access token
+     * @return A ResponseEntity that returns 200 with the user streak
+     * 401 if a vendor tries to access the endpoint
+     * 500 if a different error occurs
+     */
     @Operation(summary = "Get a streak for a user")
     @GetMapping("/streak")
     public ResponseEntity<?> getUserStreak(@RequestHeader("Authorization") String authHeader) {
@@ -162,11 +221,18 @@ public class UserController {
         }
 
         catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
 
+    /**
+     * Processes bulk data that is seeded, and stores it in the database
+     * @param authToken A bearer access token
+     * @param users A list of generated 'fake' users
+     * @return A ResponseEntity that returns 204 if successful
+     * 401 if a User or Vendor tries to access the endpoint (only INTERNAL is allowed)
+     * 500 if a different error occurs
+     */
     @Operation(summary = "Allows for bulk data transfer for seeded data")
     @PostMapping("/internal")
     public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @Valid @RequestBody List<UserSeedDTO> users) {
@@ -181,7 +247,6 @@ public class UserController {
         }
 
         catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }

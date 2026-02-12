@@ -3,16 +3,17 @@ package com.teamtiger.userservice.users.services;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Spring Component that generates a unique username for users
+ */
 @Component
 @RequiredArgsConstructor
 public class UsernameGenerator {
@@ -25,6 +26,20 @@ public class UsernameGenerator {
     private String[] animals;
     private String[] adjectives;
 
+    /**
+     * Loads the names and adjectives into memory, once at startup
+     */
+    @PostConstruct
+    void loadLists() {
+        this.animals = loadFile("animal_names.txt");
+        this.adjectives = loadFile("adjectives.txt");
+    }
+
+    /**
+     * Generates a unique username
+     * Tries 10 times and checks existence in database
+     * @return A unique random username
+     */
     public String generateUsername() {
         Random rand = new Random();
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
@@ -40,18 +55,22 @@ public class UsernameGenerator {
         return animals[nounIndex] + rand.nextInt(10000);
     }
 
+    /**
+     * Generates a random username candidate
+     * @param rand The Random object
+     * @return A random username
+     */
     private String createUsername(Random rand) {
         int animalIndex = rand.nextInt(animals.length);
         int adjectiveIndex = rand.nextInt(adjectives.length);
         return adjectives[adjectiveIndex] + " " + animals[animalIndex];
     }
 
-    @PostConstruct
-    void loadLists() {
-        this.animals = loadFile("animal_names.txt");
-        this.adjectives = loadFile("adjectives.txt");
-    }
-
+    /**
+     * Loads a text file into a String array
+     * @param fileName The name of the target text file
+     * @return A String array of all words, or an empty array if an error occurs
+     */
     private String[] loadFile(String fileName) {
         List<String> lines = new ArrayList<>();
 

@@ -4,9 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.Set;
 import java.util.UUID;
 
+
+/**
+ * Spring Entity that specifies the users database table
+ * Specifies an index on the email to speed up query performance
+ */
 @Entity
 @Getter
 @Setter
@@ -17,7 +21,6 @@ import java.util.UUID;
         name = "users",
         indexes = {
                 @Index(name = "idx_email", columnList = "email", unique = true),
-                @Index(name = "idx_username", columnList = "username", unique = true)
         }
 
 )
@@ -29,7 +32,7 @@ public class User {
     @Column(name = "user_id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
     @Column(name = "email", nullable = false)

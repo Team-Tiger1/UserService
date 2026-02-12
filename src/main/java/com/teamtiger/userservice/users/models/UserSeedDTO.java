@@ -10,6 +10,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * DTO for data required when seeding generated users
+ */
 @RequiredArgsConstructor
 @Getter
 @Setter

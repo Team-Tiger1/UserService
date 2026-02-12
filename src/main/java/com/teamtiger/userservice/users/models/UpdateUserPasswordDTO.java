@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * DTO for updating user password endpoint
+ */
 @Getter
 @AllArgsConstructor
 public class UpdateUserPasswordDTO {

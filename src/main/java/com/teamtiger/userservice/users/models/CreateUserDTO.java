@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+/**
+ * DTO for the creating user endpoint
+ */
 @Getter
 @Builder
 @AllArgsConstructor

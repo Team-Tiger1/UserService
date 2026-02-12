@@ -6,6 +6,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Spring Entity that specifies the streaks database table
+ */
 @Entity
 @Getter
 @Setter

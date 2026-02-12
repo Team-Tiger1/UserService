@@ -16,9 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +28,11 @@ public class UserServiceJPA implements UserService {
     private final UsernameGenerator usernameGenerator;
     private final StreakRepository streakRepository;
 
+    /**
+     * Creates a new user and stores the record on the database
+     * @param userDTO A valid request body with the information for the user account
+     * @return A UserRegisterDTO that has the user information and refresh token
+     */
     @Override
     public UserRegisterDTO createUser(CreateUserDTO userDTO) {
 
@@ -68,6 +71,11 @@ public class UserServiceJPA implements UserService {
                 .build();
     }
 
+    /**
+     * Allows a user to login, and checks a users details against the database
+     * @param loginDTO A valid login request body
+     * @return A UserRegisterDTO that has the User record and refresh token
+     */
     @Override
     public UserRegisterDTO userLogin(LoginDTO loginDTO) {
 
@@ -90,8 +98,22 @@ public class UserServiceJPA implements UserService {
                 .build();
     }
 
+    /**
+     * Gets the user's details from the database
+     * @param accessToken An access token (has userId in the payload)
+     * @return User details from the database
+     */
     @Override
     public UserDTO getUserProfile(String accessToken) {
+
+        //Check role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if (!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract userId and query database
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
 
         User savedUser = userRepository.findById(userId)
@@ -100,9 +122,23 @@ public class UserServiceJPA implements UserService {
         return UserMapper.toDTO(savedUser);
     }
 
+    /**
+     * Updates a users database record with the details provided
+     * @param accessToken An access token (has userId in the payload)
+     * @param updateUserDTO Has the details that are being updated
+     * @return The new user details after they've been updated
+     */
     @Override
     public UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
 
+        //Check role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if (!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract Id and query database
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
 
         User user = userRepository.findById(userId)
@@ -124,13 +160,27 @@ public class UserServiceJPA implements UserService {
         return UserMapper.toDTO(savedUser);
     }
 
+    /**
+     * Updates a user's password, given that their old one is correct
+     * @param accessToken An access token (has userId in the payload)
+     * @param passwordDTO The new password and old password
+     */
     @Override
     public void updateUserPassword(String accessToken, UpdateUserPasswordDTO passwordDTO) {
 
+        //Check role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if (!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract Id and query database
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
+        //Check old password matches stored one
         boolean isOldPasswordCorrect = passwordHasher.matches(passwordDTO.getOldPassword(), user.getPassword());
         if (!isOldPasswordCorrect) {
             throw new PasswordIncorrectException();
@@ -142,14 +192,23 @@ public class UserServiceJPA implements UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Gets a users streak stored on the database and generates one if they don't have one
+     * @param accessToken An access token (has userId in the payload)
+     * @return The streak wrapped in a DTO
+     */
     @Override
     public StreakDTO getUserStreak(String accessToken) {
-        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //Check role is valid
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
         if (!role.equals("USER")) {
             throw new AuthorizationException();
         }
+
+        //Extract userId and query database
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
 
         Streak streak = streakRepository.findById(userId).orElseGet(() -> Streak.builder()
                 .streak(0)
@@ -161,7 +220,7 @@ public class UserServiceJPA implements UserService {
 
 
         if (streak.getLastReservation().isBefore(LocalDateTime.now().minusWeeks(1))) {
-            //Reset streak
+            //Reset streak if last reservation was longer than a week ago
             streak.setStreak(0);
             streak = streakRepository.save(streak);
         }
@@ -170,15 +229,23 @@ public class UserServiceJPA implements UserService {
 
     }
 
+    /**
+     * Saves seeded users to the database and generates references for streaks
+     * @param accessToken An access token (has userId in the payload)
+     * @param users List of generated users
+     */
     @Transactional
     @Override
     public void loadSeededUsers(String accessToken, List<UserSeedDTO> users) {
+
+        //Check role is valid
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
         if (!role.equals("INTERNAL")) {
             throw new AuthorizationException();
         }
 
+        //Convert DTOs to Entities
         List<User> entityList = users.stream()
                 .peek(dto -> System.out.println(dto.getUserId()))
                 .map(dto -> User.builder()
@@ -207,6 +274,9 @@ public class UserServiceJPA implements UserService {
         streakRepository.saveAll(streakList);
     }
 
+    /**
+     * Maps database entities to DTOs
+     */
     private static class UserMapper {
         public static UserDTO toDTO(User entity) {
             if (entity == null) return null;
@@ -214,15 +284,6 @@ public class UserServiceJPA implements UserService {
                     .id(entity.getId())
                     .username(entity.getUsername())
                     .email(entity.getEmail())
-                    .build();
-        }
-
-        public static User toEntity(UserDTO dto) {
-            if (dto == null) return null;
-            return User.builder()
-                    .id(dto.getId())
-                    .username(dto.getUsername())
-                    .email(dto.getEmail())
                     .build();
         }
     }

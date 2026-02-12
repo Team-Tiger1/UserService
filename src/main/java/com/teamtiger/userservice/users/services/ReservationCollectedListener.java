@@ -2,11 +2,8 @@ package com.teamtiger.userservice.users.services;
 
 import com.teamtiger.userservice.users.config.UserRabbitMQConfig;
 import com.teamtiger.userservice.users.entities.Streak;
-import com.teamtiger.userservice.users.entities.User;
-import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.models.events.ReservationCollectedEvent;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
-import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -22,10 +19,14 @@ public class ReservationCollectedListener {
 
     private final StreakRepository streakRepository;
 
+    /**
+     * Method for handling messages from the queue and updating the user streak
+     * @param event The message from the queue
+     */
     @RabbitListener(queues = UserRabbitMQConfig.QUEUE)
     public void handle(@NonNull ReservationCollectedEvent event) {
-        //Logic for updating user streaks
 
+        //Extract data from message
         UUID userId = event.userId();
         LocalDateTime collectedTime = event.reservationCollected();
 
@@ -40,12 +41,13 @@ public class ReservationCollectedListener {
         long daysElapsed = Duration.between(streak.getLastReservation(), collectedTime).toDays();
 
         if (daysElapsed >= 7 && daysElapsed < 14) {
+            //If new week since last reservation
             int currentStreak = streak.getStreak();
             streak.setStreak(currentStreak + 1);
             streak.setLastReservation(collectedTime);
             streakRepository.save(streak);
         } else if (daysElapsed >= 14) {
-            //Reset the streak
+            //If more than week has passed, reset the streak
             streak.setStreak(1);
             streak.setLastReservation(collectedTime);
             streakRepository.save(streak);
