@@ -35,7 +35,7 @@ import com.teamtiger.userservice.users.models.LoginDTO;
 import com.teamtiger.userservice.users.models.UserDTO;
 import com.teamtiger.userservice.users.models.UserRegisterDTO;
 
-//unit tests for UserServicesJPA
+//unit tests for UserServices
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -80,27 +80,29 @@ class UserServiceTest {
                 .build();
     }
 
+    /**
+     * createUser should generate username, hash password, save user, return refresh token
+     */
     @Test
     void testCreateUser() {
         
         String generatedUsername = "testUsername";
         String hashedPassword = "hashedPassword123";
         String refreshToken = "refreshToken123";
-        //arrange 
-        //creates the mock behaviour, like if its called with x parameters, return this
+
+        //creates the mock behaviour, if called with x parameters, return y
         when(usernameGenerator.generateUsername()).thenReturn(generatedUsername);
         when(userRepository.existsByEmail(createUserDTO.getEmail())).thenReturn(false);
-        //as password hashing isnt known
+        //as password hashing isn't known
         when(passwordHasher.hashPassword(createUserDTO.getPassword())).thenReturn(hashedPassword);
-        //when any iser saving is called, return the test users object
+
+        //when any user saving is called, return the test users object
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(jwtTokenUtil.generateRefreshToken(testUserId, Role.USER)).thenReturn(refreshToken);
 
-        //act
-        //calls generateUsername, existsByEmail etc etc and gets the result from the when statements above
+        //gets the result from the statements above
         UserRegisterDTO result = userService.createUser(createUserDTO);
 
-        //assert
         //check the values returned
         assertNotNull(result);
         assertNotNull(result.getUserDTO());
@@ -108,13 +110,19 @@ class UserServiceTest {
         assertEquals("test@exeter.ac.uk", result.getUserDTO().getEmail());
         assertEquals(generatedUsername, result.getUserDTO().getUsername());
         assertEquals(refreshToken, result.getRefreshToken());
-        //ensure the asserts were called on the correct parameters
+
+        //ensures the asserts were called on the expected dependencies
         verify(userRepository).existsByEmail(createUserDTO.getEmail());
         verify(passwordHasher).hashPassword(createUserDTO.getPassword());
         verify(userRepository).save(any(User.class));
         verify(jwtTokenUtil).generateRefreshToken(testUserId, Role.USER);
     }
 
+    /**
+     * tests unsuccessful user creation,
+     * email is taken/already exists
+     * ensure it does not save the user or hash the password
+     */
     @Test
     void testCreateUser_EmailTaken() {
         when(userRepository.existsByEmail(createUserDTO.getEmail())).thenReturn(true);
@@ -125,10 +133,20 @@ class UserServiceTest {
 
         verify(userRepository).existsByEmail(createUserDTO.getEmail());
         verify(userRepository, never()).save(any(User.class));
+        verify(passwordHasher, never()).hashPassword(anyString());
+
+        verify(usernameGenerator).generateUsername();
+        verify(jwtTokenUtil, never()).generateRefreshToken(any(), any());
+
+
     }
 
+    /**
+     * tests successful user login (password and email exist and match)
+     * return the DTO
+     */
     @Test
-    void testUserLogin() {
+    void testUserLogin_Success() {
         String refreshToken = "refreshToken123";
         when(userRepository.findByEmail(loginDTO.getEmail())).thenReturn(Optional.of(testUser));
         when(passwordHasher.matches(loginDTO.getPassword(), testUser.getPassword())).thenReturn(true);
@@ -139,6 +157,7 @@ class UserServiceTest {
         assertNotNull(result);
         assertNotNull(result.getUserDTO());
         assertEquals(testUserId, result.getUserDTO().getId());
+        assertEquals("testUsername", result.getUserDTO().getUsername());
         assertEquals("test@exeter.ac.uk", result.getUserDTO().getEmail());
         assertEquals(refreshToken, result.getRefreshToken());
 
@@ -147,6 +166,10 @@ class UserServiceTest {
         verify(jwtTokenUtil).generateRefreshToken(testUserId, Role.USER);
     }
 
+    /**
+     * tests user login with invalid email (email that doesn't exist)
+     *  ensure it doesn't try to verify the password
+     */
     @Test
     void testUserLogin_invalidEmail() {
         when(userRepository.findByEmail(loginDTO.getEmail())).thenReturn(Optional.empty());
@@ -157,8 +180,15 @@ class UserServiceTest {
 
         verify(userRepository).findByEmail(loginDTO.getEmail());
         verify(passwordHasher, never()).matches(anyString(), anyString());
+        verify(jwtTokenUtil, never()).generateRefreshToken(any(), any());
+
     }
 
+    /**
+     * tests a user login with an invalid password
+     *  using an email that does exist
+     * ensure no refresh token is made
+     */
     @Test
     void testUserLogin_invalidPassword() {
         when(userRepository.findByEmail(loginDTO.getEmail())).thenReturn(Optional.of(testUser));
@@ -173,6 +203,9 @@ class UserServiceTest {
         verify(jwtTokenUtil, never()).generateRefreshToken(any(), any());
     }
 
+    /**
+     * tests getting the user from the repository, using the access token
+     */
     @Test
     void testGetUserProfile() {
         String accessToken = "accessToken123";
@@ -190,6 +223,10 @@ class UserServiceTest {
         verify(userRepository).findById(testUserId);
     }
 
+    /**
+     * tests attempting to get an invalid users profile
+     *  meaning the access token didn't contain a valid id
+     */
     @Test
     void testGetUserProfile_invalidUser() {
         String accessToken = "accessToken123";

@@ -52,7 +52,7 @@ public class UserControllerTest {
 
     @BeforeEach
     void setUp(){
-        testUserId = UUID.randomUUID(); //make a new UUID for each test, used for testUser
+        testUserId = UUID.randomUUID(); //make a new UUID for each test
         
         createUserDTO = CreateUserDTO.builder()
                 .email("test@exeter.ac.uk")
@@ -60,17 +60,10 @@ public class UserControllerTest {
                 .build();
 
 
-
         loginDTO = new LoginDTO();
         loginDTO.setEmail("test@exeter.ac.uk");
         loginDTO.setPassword("password123");
 
-        // testUser = User.builder()
-        //         .id(testUserId)
-        //         .username("testUsername")
-        //         .email("test@exeter.ac.uk")
-        //         .password("hashedPassword123")
-        //         .build();
     
         userDTO = UserDTO.builder()     
                 .id(testUserId)
@@ -90,16 +83,19 @@ public class UserControllerTest {
     }
 
 
-    //test successful path of user registration
-    //should return 200 and set cookies
+    /**
+     * test successful user registration
+     * @throws Exception
+     */
     @Test
     public void testRegisterUser_Success() throws Exception{
-        
-        String requestBody = objectMapper.writeValueAsString(createUserDTO);
 
+        //DTO -> JSON string
+        String requestBody = objectMapper.writeValueAsString(createUserDTO);
         when(userService.createUser(any(CreateUserDTO.class))).thenReturn(userRegisterDTO);
 
 
+        //http POST to controller, and ensure a response is given
         mockMvc.perform(post("/users/register")
                     .content(requestBody)
                     .contentType(MediaType.APPLICATION_JSON))
@@ -112,10 +108,16 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(testUserId.toString()))
                 .andExpect(jsonPath("$.username").value("testUsername"))
                 .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
+
+        verify(userService).createUser(any(CreateUserDTO.class));
+
     }
 
-
-
+    /**
+     * test registering a user with an email that's already in use
+     *  should throw exception
+     * @throws Exception
+     */
     @Test
     public void testRegisterUser_EmailTaken() throws Exception {
 
@@ -127,9 +129,16 @@ public class UserControllerTest {
                     .content(requestBody)
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isConflict());
+
+        verify(userService).createUser(any(CreateUserDTO.class));
+
     }
 
 
+    /**
+     * test a successful user login
+     * @throws Exception
+     */
     @Test
     public void testUserLogin_Success() throws Exception{
 
@@ -147,8 +156,13 @@ public class UserControllerTest {
             .andExpect(jsonPath("$.username").value("testUsername"))
             .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
+
     }
 
+    /**
+     * tests unsuccessful user login as user doesnt exist
+     * @throws Exception
+     */
     @Test
     public void testUserLogin_UserNotFound() throws Exception{
         String requestBody = objectMapper.writeValueAsString(loginDTO);
@@ -161,6 +175,10 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * tests unsuccessful user login as password is incorrect
+     * @throws Exception
+     */
     @Test
     public void testUserLogin_PasswordIncorrect() throws Exception{
         String requestBody = objectMapper.writeValueAsString(loginDTO);
@@ -175,6 +193,10 @@ public class UserControllerTest {
     }
 
 
+    /**
+     * tests getting a user profile after authentication
+     * @throws Exception
+     */
     @Test
     public void testGetUserProfile_Success() throws Exception{
 
@@ -191,9 +213,10 @@ public class UserControllerTest {
     }
 
 
-
-
-
+    /**
+     *
+     * @throws Exception
+     */
     @Test
     public void testGetUserProfile_UserNotFound() throws Exception{
         String requestBody = objectMapper.writeValueAsString(loginDTO);
@@ -222,7 +245,8 @@ public class UserControllerTest {
         String requestBody = objectMapper.writeValueAsString(updateUserPasswordDTO);
 
 
-        //when(userService.getUserProfile(anyString())).then(userDTO);
+        doNothing().when(userService).updateUserPassword(anyString(), any(UpdateUserPasswordDTO.class));
+
         mockMvc.perform(patch("/users/password")
                     .header("Authorization", "Bearer accessToken123")
                     .content(requestBody)
@@ -231,6 +255,8 @@ public class UserControllerTest {
         //     .andExpect(jsonPath("$.id").value(testUserId.toString()))
         //     .andExpect(jsonPath("$.username").value("testUsername"))
         //     .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
+
+        verify(userService).updateUserPassword(eq("accessToken123"), any(UpdateUserPasswordDTO.class));
 
     }
 
@@ -260,7 +286,7 @@ public class UserControllerTest {
     // }
 
 
-
+    //tests unexpected runtime error, should be a 500 error
     @Test
     public void testPassword_500() throws Exception{
 
@@ -273,84 +299,10 @@ public class UserControllerTest {
                     .content(requestBody)
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
+
+        verify(userService).updateUserPassword(anyString(), any(UpdateUserPasswordDTO.class));
+
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//      //sucess path
-//     /// user not found
-//     /// internal 500 error
-//     /// 
-//     @Test
-//     public void testupdateuserprofile() throws Exception{
-
-//         // String requestBody = objectMapper.writeValueAsString(loginDTO);
-
-
-//         when(userService.getUserProfile(anyString())).thenReturn(userDTO);
-//         mockMvc.perform(patch("/users/me")
-//                     .header("Authorization", "Bearer accessToken123"))
-//             .andExpect(status().isOk());
-//         //     .andExpect(jsonPath("$.id").value(testUserId.toString()))
-//         //     .andExpect(jsonPath("$.username").value("testUsername"))
-//         //     .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
-
-//     }
-
-
-
-
-
-//     @Test
-//     public void testupdateuserprofileusernotfound() throws exeption{
-//         String requestBody = objectMapper.writeValueAsString(updateUserDTO);
-
-//         when(userService.createLogin(any(LoginDTO.class))).thenThrow(new UserNotFoundException());
-        
-//         mockMvc.perform(post("/users/login")
-//                     .content(requestBody)
-//                     .contentType(MediaType.APPLICATION_JSON))
-//             .andExpect(status().isbadrequest());
-           
-           
-           
-//             // .andExpect(cookie().exists("refreshToken"))
-//             // .andExpect(jsonPath("$.id").value(testUserId.toString()))
-//             // .andExpect(jsonPath("$.username").value("testUsername"))
-//             // .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
-
-//     }
-
-
-
-
 
 
 }

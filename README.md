@@ -145,5 +145,9 @@ The Image below highlights where in the architecture this service operates.
 <br>
 
 **Author: Ivy Figari**
-
+- Created unit tests: 
+  - UserController, 
+  - UserServices, 
+  - VendorServices
+- Created Integration tests
 
