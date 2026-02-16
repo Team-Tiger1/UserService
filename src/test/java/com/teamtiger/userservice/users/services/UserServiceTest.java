@@ -225,7 +225,8 @@ class UserServiceTest {
 
     /**
      * tests attempting to get an invalid users profile
-     *  meaning the access token didn't contain a valid id
+     *
+     * meaning the access token didn't contain a valid id
      */
     @Test
     void testGetUserProfile_invalidUser() {

@@ -57,10 +57,12 @@ class UserServices_IT {
                 .build();
     }
 
-    // create user
-    // check streak
-    // simulate reservation
-    // check streak
+    /**
+     * create user
+     * check streak
+     * simulate reservation
+     * check streak
+     */
     @Test
     void createUser_ReservationEvent_Streak_IT() {
         UserRegisterDTO register = userService.createUser(createUserDTO);
@@ -85,8 +87,10 @@ class UserServices_IT {
     }
 
 
-    // tests if when 2 reservations are made in the same day,
-    // the streak does not increase twice
+    /**
+     * tests if when 2 reservations are made in the same day,
+     * the streak does not increase twice
+     */
     @Test
     void twoReservations_OnSameDay_Streak_IT(){
         //reuse UserRegistration_IT

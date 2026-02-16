@@ -115,7 +115,7 @@ public class UserControllerTest {
 
     /**
      * test registering a user with an email that's already in use
-     *  should throw exception
+     * should throw exception
      * @throws Exception
      */
     @Test
@@ -136,7 +136,7 @@ public class UserControllerTest {
 
 
     /**
-     * test a successful user login
+     * Test a successful user login
      * @throws Exception
      */
     @Test
@@ -160,7 +160,7 @@ public class UserControllerTest {
     }
 
     /**
-     * tests unsuccessful user login as user doesnt exist
+     * Tests unsuccessful user login as user doesnt exist
      * @throws Exception
      */
     @Test
@@ -176,7 +176,7 @@ public class UserControllerTest {
     }
 
     /**
-     * tests unsuccessful user login as password is incorrect
+     * Tests unsuccessful user login as password is incorrect
      * @throws Exception
      */
     @Test
