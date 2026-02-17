@@ -27,6 +27,9 @@ import com.teamtiger.userservice.vendors.models.VendorRegisterDTO;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import com.teamtiger.userservice.vendors.services.VendorServiceJPA;
 
+/**
+ * Tests for Vendor Services {@link com.teamtiger.userservice.vendors.services.VendorServiceJPA}
+ */
 @ExtendWith(MockitoExtension.class)
 class VendorServiceJPATest {
 
@@ -85,7 +88,7 @@ class VendorServiceJPATest {
 
 
     /**
-     * unit test creating a vendor successfully
+     * Test creating a vendor successfully
      * check name uniqueness, password hashing happens, vendor is saved, refresh token given
      */
     @Test
@@ -114,7 +117,7 @@ class VendorServiceJPATest {
     }
 
     /**
-     * Trimmed restaurant names should be saved without whitespace
+     * Trimmed restaurant names should be saved without leading or trailing whitespace
      */
     @Test
     void testCreateVendor_Trim() {
@@ -135,27 +138,8 @@ class VendorServiceJPATest {
         when(vendorRepository.save(any(Vendor.class))).thenReturn(testVendor);
         when(jwtTokenUtil.generateRefreshToken(nullable(UUID.class), eq(Role.VENDOR))).thenReturn(testRefreshToken);
 
-
         vendorService.createVendor(testTrimCreateVendorDTO);
 
         verify(vendorRepository).existsByName("Trim Test Restaurant");
     }
-
-    //should throw error when company name already exists
-    // @Test
-    // void shouldThrowExceptionWhenNameTaken() {
-
-    //     when(vendorRepository.existsByName("Test Restaurant")).thenReturn(true);
-
-
-    //     assertThatThrownBy(() -> vendorService.createVendor(createVendorDTO))
-    //             .isInstanceOf(CompanyNameTakenException.class);
-
-    //     verify(vendorRepository).existsByName("Test Restaurant");
-    //     verify(passwordHasher, never()).hashPassword(anyString());
-    //     verify(vendorRepository, never()).save(any(Vendor.class));
-    // }
 }
-
-
-

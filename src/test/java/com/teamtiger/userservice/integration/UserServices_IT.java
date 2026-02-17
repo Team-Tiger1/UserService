@@ -27,11 +27,12 @@ import com.teamtiger.userservice.users.services.UserServiceJPA;
 import jakarta.transaction.Transactional;
 
 
-
-
 @SpringBootTest(properties = {"jwt.secret=ZmFrZS1qd3Qtc2VjcmV0LWZvci10ZXN0cy0zMi1ieXRlcy1sb25nISE="})
 
-// integration test for user and streak
+/**
+ * Integration test for user and streak
+ * {@link com.teamtiger.userservice.users.services.UserServiceJPA}
+  */
 @Transactional //ensures databse changes roll back
 class UserServices_IT {
 
@@ -58,10 +59,10 @@ class UserServices_IT {
     }
 
     /**
-     * create user
-     * check streak
-     * simulate reservation
-     * check streak
+     * Create user
+     * Check streak
+     * Simulate reservation
+     * Check streak
      */
     @Test
     void createUser_ReservationEvent_Streak_IT() {
@@ -88,7 +89,7 @@ class UserServices_IT {
 
 
     /**
-     * tests if when 2 reservations are made in the same day,
+     * Tests if when 2 reservations are made in the same day (by the same user),
      * the streak does not increase twice
      */
     @Test
@@ -117,17 +118,6 @@ class UserServices_IT {
         //streak should still be 1
         assertEquals(1, secondStreak.getStreak(),"streak shouldnt increase after each reservation");
 
-//        //ensure the last reservation time has been updates,
-//        assertEquals(later, secondStreak.getLastReservation());
-
     }
-
-
-
-
-    //duplicate email
-    //invalid email format
-    //password min length
-    //2 reservations on the same day don't increase streak twice
 
 }

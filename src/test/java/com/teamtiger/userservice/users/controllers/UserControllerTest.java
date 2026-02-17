@@ -27,6 +27,10 @@ import com.teamtiger.userservice.users.models.*;
 
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
+/**
+ * Tests for UserController
+ * {@link UserController}.
+ */
 @CommonsLog
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
@@ -84,8 +88,9 @@ public class UserControllerTest {
 
 
     /**
-     * test successful user registration
-     * @throws Exception
+     * Test successful user registration for POST /users/register
+     * expect 200
+     *
      */
     @Test
     public void testRegisterUser_Success() throws Exception{
@@ -114,9 +119,10 @@ public class UserControllerTest {
     }
 
     /**
-     * test registering a user with an email that's already in use
-     * should throw exception
-     * @throws Exception
+     * Test registering a user with an email that's already in use
+     * expects 400 error,
+     * @throws EmailAlreadyTakenException
+     *
      */
     @Test
     public void testRegisterUser_EmailTaken() throws Exception {
@@ -136,8 +142,8 @@ public class UserControllerTest {
 
 
     /**
-     * Test a successful user login
-     * @throws Exception
+     * Test a successful user login via POST /users/login
+     * Expects 200
      */
     @Test
     public void testUserLogin_Success() throws Exception{
@@ -156,12 +162,11 @@ public class UserControllerTest {
             .andExpect(jsonPath("$.username").value("testUsername"))
             .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
-
     }
 
     /**
      * Tests unsuccessful user login as user doesnt exist
-     * @throws Exception
+     * Expects 404
      */
     @Test
     public void testUserLogin_UserNotFound() throws Exception{
@@ -177,7 +182,7 @@ public class UserControllerTest {
 
     /**
      * Tests unsuccessful user login as password is incorrect
-     * @throws Exception
+     * expects 401
      */
     @Test
     public void testUserLogin_PasswordIncorrect() throws Exception{
@@ -194,13 +199,11 @@ public class UserControllerTest {
 
 
     /**
-     * tests getting a user profile after authentication
-     * @throws Exception
+     * Tests getting a user profile via GET /users/me
+     * Expects 200
      */
     @Test
     public void testGetUserProfile_Success() throws Exception{
-
-        // String requestBody = objectMapper.writeValueAsString(loginDTO);
 
         when(userService.getUserProfile(anyString())).thenReturn(userDTO);
         mockMvc.perform(get("/users/me")
@@ -212,10 +215,9 @@ public class UserControllerTest {
 
     }
 
-
     /**
-     *
-     * @throws Exception
+     * Tests getting a user profile when the access token cant be resolved to find the user
+     * Expects 404
      */
     @Test
     public void testGetUserProfile_UserNotFound() throws Exception{
@@ -226,19 +228,14 @@ public class UserControllerTest {
         mockMvc.perform(get("/users/me")
                     .header("Authorization", "Bearer accessToken123"))
             .andExpect(status().isNotFound());
-           
-            // .andExpect(cookie().exists("refreshToken"))
-            // .andExpect(jsonPath("$.id").value(testUserId.toString()))
-            // .andExpect(jsonPath("$.username").value("testUsername"))
-            // .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
     }
 
 
-
-    
-
-  
+    /**
+     * Tests updating the users password via PATCH /users/password
+     * Expects 200
+     */
     @Test
     public void testPassword_Sucess() throws Exception{
 
@@ -252,41 +249,16 @@ public class UserControllerTest {
                     .content(requestBody)
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
-        //     .andExpect(jsonPath("$.id").value(testUserId.toString()))
-        //     .andExpect(jsonPath("$.username").value("testUsername"))
-        //     .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
         verify(userService).updateUserPassword(eq("accessToken123"), any(UpdateUserPasswordDTO.class));
 
     }
 
 
-
-
-
-    // @Test
-    // public void testPassword_WrongPassword() throws Exception{
-    //     String requestBody = objectMapper.writeValueAsString(updateUserPasswordDTO);
-
-    //     when(userService.updateUserPassword(any(UpdateUserPassword.class))).thenThrow(new PasswordIncorrectException());
-        
-    //     mockMvc.perform(patch("/users/password")
-    //                 .header("Authorization", "Bearer accessToken123")   
-    //                 .content(requestBody)
-    //                 .contentType(MediaType.APPLICATION_JSON))
-    //             .andExpect(status().isBadRequest());
-           
-           
-           
-    //         // .andExpect(cookie().exists("refreshToken"))
-    //         // .andExpect(jsonPath("$.id").value(testUserId.toString()))
-    //         // .andExpect(jsonPath("$.username").value("testUsername"))
-    //         // .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
-
-    // }
-
-
-    //tests unexpected runtime error, should be a 500 error
+    /**
+     * Tests unexpected runtime error while updating password,
+     * Expects 500
+     */
     @Test
     public void testPassword_500() throws Exception{
 
@@ -303,6 +275,4 @@ public class UserControllerTest {
         verify(userService).updateUserPassword(anyString(), any(UpdateUserPasswordDTO.class));
 
     }
-
-
 }

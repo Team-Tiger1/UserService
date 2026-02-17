@@ -35,7 +35,10 @@ import com.teamtiger.userservice.users.models.LoginDTO;
 import com.teamtiger.userservice.users.models.UserDTO;
 import com.teamtiger.userservice.users.models.UserRegisterDTO;
 
-//unit tests for UserServices
+/**
+ * Unit Tests for User Services
+ * {@link UserServiceJPA}
+ */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -81,6 +84,7 @@ class UserServiceTest {
     }
 
     /**
+     * Create new user
      * createUser should generate username, hash password, save user, return refresh token
      */
     @Test
@@ -119,7 +123,7 @@ class UserServiceTest {
     }
 
     /**
-     * tests unsuccessful user creation,
+     * Tests unsuccessful user creation,
      * email is taken/already exists
      * ensure it does not save the user or hash the password
      */
@@ -142,8 +146,8 @@ class UserServiceTest {
     }
 
     /**
-     * tests successful user login (password and email exist and match)
-     * return the DTO
+     * Tests successful user login (password and email exist and match)
+     * return token, and the user details (withing DTO)
      */
     @Test
     void testUserLogin_Success() {
@@ -167,8 +171,7 @@ class UserServiceTest {
     }
 
     /**
-     * tests user login with invalid email (email that doesn't exist)
-     *  ensure it doesn't try to verify the password
+     * Tests user login with invalid email (email that doesn't exist)
      */
     @Test
     void testUserLogin_invalidEmail() {
@@ -185,9 +188,8 @@ class UserServiceTest {
     }
 
     /**
-     * tests a user login with an invalid password
-     *  using an email that does exist
-     * ensure no refresh token is made
+     * Tests a user login with an invalid password
+     * Password doesn't match the stored hash
      */
     @Test
     void testUserLogin_invalidPassword() {
@@ -204,7 +206,7 @@ class UserServiceTest {
     }
 
     /**
-     * tests getting the user from the repository, using the access token
+     * Tests returns user profile when valid access token (repository lookup)
      */
     @Test
     void testGetUserProfile() {
@@ -224,9 +226,8 @@ class UserServiceTest {
     }
 
     /**
-     * tests attempting to get an invalid users profile
-     *
-     * meaning the access token didn't contain a valid id
+     * Tests attempting to get an invalid users profile
+     * Meaning the access token didn't contain a valid id
      */
     @Test
     void testGetUserProfile_invalidUser() {
@@ -242,29 +243,4 @@ class UserServiceTest {
         verify(userRepository).findById(testUserId);
     }
 
-
-
-    //not finished, this yet, will come back to when done some work on other test files
-    // needs UpdateUserDTO
-    // @Test
-    // void testUpdateUserProfile() {
-    //     String accessToken = "accessToken123";
-    //     UpdateUserDTO updateDTO = new UpdateUserDTO();
-    //     updateDTO.setEmail("updatesEmail@exeter.ac.uk");
-
-    //     when(jwtTokenUtil.getUuidFromToken(accessToken)).thenReturn(testUserId);
-    //     when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
-    //     when(userRepository.existsByEmail("updatesEmail@exeter.ac.uk")).thenReturn(false);
-    //     when(userRepository.save(any(User.class))).thenReturn(testUser);
-
-
-
-    //     UserDTO result = userService.updateUserProfile(accessToken, updateDTO);
-
-    //     assertNotNull(result);
-    //     verify(jwtTokenUtil).getUuidFromToken(accessToken);
-    //     verify(userRepository).findById(testUserId);
-    //     verify(userRepository).existsByEmail("updatesEmail@exeter.ac.uk");
-    //     verify(userRepository, never()).save(any(User.class));
-    // }
 }
