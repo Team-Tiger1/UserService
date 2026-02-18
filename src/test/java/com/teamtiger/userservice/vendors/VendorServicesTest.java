@@ -1,5 +1,4 @@
 package com.teamtiger.userservice.vendors;
-// package com.teamtiger.userservice.vendors.services;
 
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ import com.teamtiger.userservice.vendors.services.VendorServiceJPA;
  * Tests for Vendor Services {@link com.teamtiger.userservice.vendors.services.VendorServiceJPA}
  */
 @ExtendWith(MockitoExtension.class)
-class VendorServiceJPATest {
+class VendorServicesTest {
 
     @Mock
     private VendorRepository vendorRepository;
