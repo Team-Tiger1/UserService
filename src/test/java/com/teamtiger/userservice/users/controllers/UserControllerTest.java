@@ -28,13 +28,13 @@ import com.teamtiger.userservice.users.models.*;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
 /**
- * Tests for UserController
+ * Tests UserController
  * {@link UserController}.
  */
 @CommonsLog
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
-    
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -46,18 +46,19 @@ public class UserControllerTest {
 
     private CreateUserDTO createUserDTO;
     private LoginDTO loginDTO;
-    // private User testUser;
-    private UUID testUserId;
+    private UUID testUserId; // Creates a new private test User testUser;
     private UserDTO userDTO;
     private UserRegisterDTO userRegisterDTO;
     private UpdateUserDTO updateUserDTO;
     private UpdateUserPasswordDTO updateUserPasswordDTO;
 
-
+    /**
+     * Set up required for each test
+     */
     @BeforeEach
-    void setUp(){
-        testUserId = UUID.randomUUID(); //make a new UUID for each test
-        
+    void setUp() {
+        testUserId = UUID.randomUUID(); // Creates a new UUID for each test
+
         createUserDTO = CreateUserDTO.builder()
                 .email("test@exeter.ac.uk")
                 .password("password123")
@@ -68,14 +69,14 @@ public class UserControllerTest {
         loginDTO.setEmail("test@exeter.ac.uk");
         loginDTO.setPassword("password123");
 
-    
-        userDTO = UserDTO.builder()     
+
+        userDTO = UserDTO.builder()
                 .id(testUserId)
                 .username("testUsername")
                 .email("test@exeter.ac.uk")
                 .build();
 
-        userRegisterDTO = UserRegisterDTO.builder()     
+        userRegisterDTO = UserRegisterDTO.builder()
                 .userDTO(userDTO)
                 .refreshToken("refreshToken123")
                 .build();
@@ -83,27 +84,25 @@ public class UserControllerTest {
 
         updateUserDTO = new UpdateUserDTO();
         updateUserDTO.setEmail("updatedEmail@exeter.ac.uk");
-        updateUserPasswordDTO = new UpdateUserPasswordDTO("oldPassword","newPassword");
+        updateUserPasswordDTO = new UpdateUserPasswordDTO("oldPassword", "newPassword");
     }
 
 
     /**
-     * Test successful user registration for POST /users/register
-     * expect 200
-     *
+     * Test successful user registration for POST /users/register, should receive HTTP status code 200
      */
     @Test
-    public void testRegisterUser_Success() throws Exception{
+    public void testRegisterUser_Success() throws Exception {
 
-        //DTO -> JSON string
+        // Converts DTO to JSON string
         String requestBody = objectMapper.writeValueAsString(createUserDTO);
         when(userService.createUser(any(CreateUserDTO.class))).thenReturn(userRegisterDTO);
 
 
-        //http POST to controller, and ensure a response is given
+        // HTTP POST to controller and ensure a response is given
         mockMvc.perform(post("/users/register")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists("refreshToken"))
                 .andExpect(cookie().value("refreshToken", "refreshToken123"))
@@ -115,14 +114,12 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
         verify(userService).createUser(any(CreateUserDTO.class));
-
     }
 
+
     /**
-     * Test registering a user with an email that's already in use
-     * expects 400 error,
-     * @throws EmailAlreadyTakenException
-     *
+     * Test registering a user with an email that's already in use, should receive 400 error
+     * @throws Exception
      */
     @Test
     public void testRegisterUser_EmailTaken() throws Exception {
@@ -130,11 +127,11 @@ public class UserControllerTest {
         String requestBody = objectMapper.writeValueAsString(createUserDTO);
 
         when(userService.createUser(any(CreateUserDTO.class))).thenThrow(new EmailAlreadyTakenException());
-        
+
         mockMvc.perform(post("/users/register")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isConflict());
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
 
         verify(userService).createUser(any(CreateUserDTO.class));
 
@@ -142,102 +139,95 @@ public class UserControllerTest {
 
 
     /**
-     * Test a successful user login via POST /users/login
-     * Expects 200
+     * Test a successful user login via POST /users/login, should receive HTTP status code 200
      */
     @Test
-    public void testUserLogin_Success() throws Exception{
+    public void testUserLogin_Success() throws Exception {
 
         String requestBody = objectMapper.writeValueAsString(loginDTO);
 
-
         when(userService.userLogin(any(LoginDTO.class))).thenReturn(userRegisterDTO);
-        
+
         mockMvc.perform(post("/users/login")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(cookie().exists("refreshToken"))
-            .andExpect(jsonPath("$.id").value(testUserId.toString()))
-            .andExpect(jsonPath("$.username").value("testUsername"))
-            .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("refreshToken"))
+                .andExpect(jsonPath("$.id").value(testUserId.toString()))
+                .andExpect(jsonPath("$.username").value("testUsername"))
+                .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
     }
 
     /**
-     * Tests unsuccessful user login as user doesnt exist
-     * Expects 404
+     * Tests unsuccessful user login as user doesn't exist, should receive 404 error
      */
     @Test
-    public void testUserLogin_UserNotFound() throws Exception{
+    public void testUserLogin_UserNotFound() throws Exception {
         String requestBody = objectMapper.writeValueAsString(loginDTO);
 
         when(userService.userLogin(any(LoginDTO.class))).thenThrow(new UserNotFoundException());
-        
+
         mockMvc.perform(post("/users/login")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     /**
-     * Tests unsuccessful user login as password is incorrect
-     * expects 401
+     * Tests unsuccessful user login as password is incorrect, should receive 401 error
      */
     @Test
-    public void testUserLogin_PasswordIncorrect() throws Exception{
+    public void testUserLogin_PasswordIncorrect() throws Exception {
         String requestBody = objectMapper.writeValueAsString(loginDTO);
 
         when(userService.userLogin(any(LoginDTO.class))).thenThrow(new PasswordIncorrectException());
-        
+
         mockMvc.perform(post("/users/login")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
 
     }
 
 
     /**
-     * Tests getting a user profile via GET /users/me
-     * Expects 200
+     * Tests getting a user profile via GET /users/me, should receive HTTP status code 200
      */
     @Test
-    public void testGetUserProfile_Success() throws Exception{
+    public void testGetUserProfile_Success() throws Exception {
 
         when(userService.getUserProfile(anyString())).thenReturn(userDTO);
         mockMvc.perform(get("/users/me")
-                    .header("Authorization", "Bearer accessToken123"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(testUserId.toString()))
-            .andExpect(jsonPath("$.username").value("testUsername"))
-            .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
+                        .header("Authorization", "Bearer accessToken123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(testUserId.toString()))
+                .andExpect(jsonPath("$.username").value("testUsername"))
+                .andExpect(jsonPath("$.email").value("test@exeter.ac.uk"));
 
     }
 
     /**
-     * Tests getting a user profile when the access token cant be resolved to find the user
-     * Expects 404
+     * Tests getting a user profile when the access token cant be resolved to find the user, should receive 404 error
      */
     @Test
-    public void testGetUserProfile_UserNotFound() throws Exception{
+    public void testGetUserProfile_UserNotFound() throws Exception {
         String requestBody = objectMapper.writeValueAsString(loginDTO);
 
         when(userService.getUserProfile(anyString())).thenThrow(new UserNotFoundException());
-        
+
         mockMvc.perform(get("/users/me")
-                    .header("Authorization", "Bearer accessToken123"))
-            .andExpect(status().isNotFound());
+                        .header("Authorization", "Bearer accessToken123"))
+                .andExpect(status().isNotFound());
 
     }
 
 
     /**
-     * Tests updating the users password via PATCH /users/password
-     * Expects 200
+     * Tests updating the users password via PATCH /users/password, should receive HTTP status code 200
      */
     @Test
-    public void testPassword_Sucess() throws Exception{
+    public void testPassword_Sucess() throws Exception {
 
         String requestBody = objectMapper.writeValueAsString(updateUserPasswordDTO);
 
@@ -245,10 +235,10 @@ public class UserControllerTest {
         doNothing().when(userService).updateUserPassword(anyString(), any(UpdateUserPasswordDTO.class));
 
         mockMvc.perform(patch("/users/password")
-                    .header("Authorization", "Bearer accessToken123")
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent());
+                        .header("Authorization", "Bearer accessToken123")
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
 
         verify(userService).updateUserPassword(eq("accessToken123"), any(UpdateUserPasswordDTO.class));
 
@@ -256,20 +246,19 @@ public class UserControllerTest {
 
 
     /**
-     * Tests unexpected runtime error while updating password,
-     * Expects 500
+     * Tests unexpected runtime error while updating password, should receive 500 error
      */
     @Test
-    public void testPassword_500() throws Exception{
+    public void testPassword_500() throws Exception {
 
         String requestBody = objectMapper.writeValueAsString(updateUserPasswordDTO);
 
         doThrow(new RuntimeException("Database error")).when(userService).updateUserPassword(anyString(), any(UpdateUserPasswordDTO.class));
 
         mockMvc.perform(patch("/users/password")
-                .header("Authorization", "Bearer accessToken123")   
-                    .content(requestBody)
-                    .contentType(MediaType.APPLICATION_JSON))
+                        .header("Authorization", "Bearer accessToken123")
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
 
         verify(userService).updateUserPassword(anyString(), any(UpdateUserPasswordDTO.class));

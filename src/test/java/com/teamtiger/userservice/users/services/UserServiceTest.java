@@ -62,9 +62,12 @@ class UserServiceTest {
     private User testUser;
     private UUID testUserId;
 
+    /**
+     * Set up required for each test
+     */
     @BeforeEach
     void setUp() {
-        testUserId = UUID.randomUUID(); //make a new UUID for each test, used for testUser
+        testUserId = UUID.randomUUID(); // Creates a new UUID for each test
 
         createUserDTO = CreateUserDTO.builder()
                 .email("test@exeter.ac.uk")
@@ -84,8 +87,7 @@ class UserServiceTest {
     }
 
     /**
-     * Create new user
-     * createUser should generate username, hash password, save user, return refresh token
+     * Tests create new user. Should generate username, hash password, save user, and return refresh token
      */
     @Test
     void testCreateUser() {
@@ -94,20 +96,14 @@ class UserServiceTest {
         String hashedPassword = "hashedPassword123";
         String refreshToken = "refreshToken123";
 
-        //creates the mock behaviour, if called with x parameters, return y
         when(usernameGenerator.generateUsername()).thenReturn(generatedUsername);
         when(userRepository.existsByEmail(createUserDTO.getEmail())).thenReturn(false);
-        //as password hashing isn't known
         when(passwordHasher.hashPassword(createUserDTO.getPassword())).thenReturn(hashedPassword);
-
-        //when any user saving is called, return the test users object
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(jwtTokenUtil.generateRefreshToken(testUserId, Role.USER)).thenReturn(refreshToken);
 
-        //gets the result from the statements above
         UserRegisterDTO result = userService.createUser(createUserDTO);
 
-        //check the values returned
         assertNotNull(result);
         assertNotNull(result.getUserDTO());
         assertEquals(testUserId, result.getUserDTO().getId());
@@ -115,7 +111,6 @@ class UserServiceTest {
         assertEquals(generatedUsername, result.getUserDTO().getUsername());
         assertEquals(refreshToken, result.getRefreshToken());
 
-        //ensures the asserts were called on the expected dependencies
         verify(userRepository).existsByEmail(createUserDTO.getEmail());
         verify(passwordHasher).hashPassword(createUserDTO.getPassword());
         verify(userRepository).save(any(User.class));
@@ -123,9 +118,7 @@ class UserServiceTest {
     }
 
     /**
-     * Tests unsuccessful user creation,
-     * email is taken/already exists
-     * ensure it does not save the user or hash the password
+     * Tests unsuccessful user creation when an email is taken, should not save the user or hash the password
      */
     @Test
     void testCreateUser_EmailTaken() {
@@ -146,8 +139,7 @@ class UserServiceTest {
     }
 
     /**
-     * Tests successful user login (password and email exist and match)
-     * return token, and the user details (withing DTO)
+     * Tests successful user login (password and email exist and match) return token, and the user details (withing DTO)
      */
     @Test
     void testUserLogin_Success() {
@@ -188,8 +180,7 @@ class UserServiceTest {
     }
 
     /**
-     * Tests a user login with an invalid password
-     * Password doesn't match the stored hash
+     * Tests a user login with an invalid password that doesn't match the stored hash
      */
     @Test
     void testUserLogin_invalidPassword() {

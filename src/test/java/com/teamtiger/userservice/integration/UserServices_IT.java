@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +27,12 @@ import com.teamtiger.userservice.users.services.UserServiceJPA;
 
 import jakarta.transaction.Transactional;
 
-
-@SpringBootTest(properties = {"jwt.secret=ZmFrZS1qd3Qtc2VjcmV0LWZvci10ZXN0cy0zMi1ieXRlcy1sb25nISE="})
-
 /**
  * Integration test for user and streak
  * {@link com.teamtiger.userservice.users.services.UserServiceJPA}
-  */
-@Transactional //ensures databse changes roll back
+ */
+@SpringBootTest(properties = {"jwt.secret=ZmFrZS1qd3Qtc2VjcmV0LWZvci10ZXN0cy0zMi1ieXRlcy1sb25nISE="})
+@Transactional // Ensures all database changes roll back
 class UserServices_IT {
 
     @Autowired
@@ -59,10 +58,7 @@ class UserServices_IT {
     }
 
     /**
-     * Create user
-     * Check streak
-     * Simulate reservation
-     * Check streak
+     * Tests creating a user, ensures streak is 0, Simulates a reservation, and tests that streak has updated.
      */
     @Test
     void createUser_ReservationEvent_Streak_IT() {
@@ -72,29 +68,27 @@ class UserServices_IT {
         assertNotNull(userId);
         assertTrue(userRepository.existsById(userId));
 
-        //streak does not exist
+        // Check streak does not exist
         assertFalse(streakRepository.existsById(userId));
 
-        //simulate reservation
+        // Check simulating reservation
         LocalDateTime timeNow = LocalDateTime.now();
         reservationCollectedListener.handle(new ReservationCollectedEvent(userId, timeNow));
 
-        //streak now exists
+        //Check streak now exists
         Streak streak = streakRepository.findById(userId).orElseThrow();
         assertEquals(1, streak.getStreak());
 
-        //ensure the last reservation time has been updates,
+        // Check that the last reservation time has been updates,
         assertEquals(timeNow, streak.getLastReservation());
     }
 
 
     /**
-     * Tests if when 2 reservations are made in the same day (by the same user),
-     * the streak does not increase twice
+     * Tests if when 2 reservations are made in the same day (by the same user), the streak does not increase twice
      */
     @Test
-    void twoReservations_OnSameDay_Streak_IT(){
-        //reuse UserRegistration_IT
+    void twoReservations_OnSameDay_Streak_IT() {
         UserRegisterDTO register = userService.createUser(createUserDTO);
 
         UUID userId = register.getUserDTO().getId();
@@ -112,11 +106,11 @@ class UserServices_IT {
         assertEquals(1, streak.getStreak());
         assertEquals(timeNow, streak.getLastReservation());
 
-        //reserve again, with later time
+        // Make another reservation at a later time
         reservationCollectedListener.handle(new ReservationCollectedEvent(userId, later));
         Streak secondStreak = streakRepository.findById(userId).orElseThrow();
-        //streak should still be 1
-        assertEquals(1, secondStreak.getStreak(),"streak shouldnt increase after each reservation");
+        // Checks streak is still 1
+        assertEquals(1, secondStreak.getStreak(), "streak shouldnt increase after each reservation");
 
     }
 
