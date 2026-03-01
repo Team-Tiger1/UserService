@@ -5,5 +5,22 @@ springdoc:
   api-docs:
     path: /userservice/v3/api-docs
 
+spring:
+  boot:
+    admin:
+      client:
+        url: "http://api-gateway-service:8080/admin-dashboard"
+        instance:
+          management-base-url: "http://user-service:8081"
+          service-base-url: "http://user-service:8081"
 
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: health,info,metrics,logfile,loggers,httpexchanges
+  endpoint:
+    health:
+      show-details: always
 
