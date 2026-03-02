@@ -5,23 +5,3 @@ springdoc:
     url: /userservice/v3/api-docs
   api-docs:
     path: /userservice/v3/api-docs
-
-spring:
-  boot:
-    admin:
-      client:
-        url: "http://api-gateway-service:80/api/admin-dashboard"
-        instance:
-          service-base-url: "https://thelastfork.shop"
-          management-base-url: "https://thelastfork.shop/management"
-          service-url: "https://thelastfork.shop/api/userservice"
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,loggers,logfile
-  endpoint:
-    health:
-      show-details: always
-
