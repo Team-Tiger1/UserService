@@ -5,3 +5,6 @@ springdoc:
     url: /userservice/v3/api-docs
   api-docs:
     path: /userservice/v3/api-docs
+
+
+
