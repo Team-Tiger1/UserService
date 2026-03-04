@@ -20,4 +20,6 @@ public interface UserService {
 
     void loadSeededUsers(String accessToken, List<UserSeedDTO> users);
 
+    List<UserBadgeDTO> getAllBadgesForUser(String accessToken);
+
 }

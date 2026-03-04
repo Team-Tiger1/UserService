@@ -251,4 +251,27 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Get all badges for a user")
+    @GetMapping("/badges")
+    public ResponseEntity<?> getBadgesForUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<UserBadgeDTO> userBadges = userService.getAllBadgesForUser(accessToken);
+            return ResponseEntity.ok(userBadges);
+        }
+
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
 }
