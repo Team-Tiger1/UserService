@@ -21,8 +21,11 @@ public class Badge {
     private BadgeName name;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private BadgeGrade grade;
+
+    @Column(nullable = false)
+    private double amountLeft;
 
 
 }
