@@ -3,8 +3,7 @@ package com.teamtiger.userservice.users.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
-import com.teamtiger.userservice.users.entities.Streak;
-import com.teamtiger.userservice.users.entities.User;
+import com.teamtiger.userservice.users.entities.*;
 import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
@@ -15,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -50,6 +51,7 @@ public class UserServiceJPA implements UserService {
                 .username(username)
                 .email(userDTO.getEmail())
                 .password(hashedPassword)
+                .badges(createAllUnrankedBadges())
                 .build();
 
         //Save user entity to DB
@@ -69,6 +71,20 @@ public class UserServiceJPA implements UserService {
                 .userDTO(UserMapper.toDTO(user))
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    private Set<Badge> createAllUnrankedBadges() {
+        Set<Badge> newBadges = new HashSet<>();
+        for (BadgeName badgeName : BadgeValues.BADGE_THRESHOLDS.keySet()) {
+
+            newBadges.add(Badge.builder()
+                    .name(badgeName)
+                    .grade(BadgeGrade.UNRANKED)
+                    .amountLeft(BadgeValues.BADGE_THRESHOLDS.get(badgeName)[0])
+                    .build());
+
+        }
+        return newBadges;
     }
 
     /**
@@ -265,6 +281,30 @@ public class UserServiceJPA implements UserService {
 
 
         streakRepository.saveAll(streakList);
+    }
+
+    @Override
+    public List<UserBadgeDTO> getAllBadgesForUser(String accessToken) {
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
+
+        Set<Badge> badges = user.getBadges();
+
+        return badges.stream()
+                .map(entity -> UserBadgeDTO.builder()
+                        .name(entity.getName())
+                        .grade(entity.getGrade())
+                        .amountLeft(entity.getAmountLeft())
+                        .build())
+                .toList();
     }
 
     /**
