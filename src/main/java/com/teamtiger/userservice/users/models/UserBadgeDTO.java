@@ -12,5 +12,6 @@ public class UserBadgeDTO {
     private BadgeName name;
     private BadgeGrade grade;
     private double amountLeft;
+    private double threshold;
 
 }
