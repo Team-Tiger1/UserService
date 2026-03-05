@@ -7,6 +7,7 @@ import com.teamtiger.userservice.users.models.events.ReservationCollectedEvent;
 import com.teamtiger.userservice.users.repositories.BadgeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -29,16 +30,20 @@ public class ReservationCollectedListener {
     private final BadgeRepository badgeRepository;
 
     //Holds method reference for each badge
-    private final Map<BadgeName, Function<UUID, ? extends Number>> badgeRepositoryLookup = Map.of(
-            BadgeName.THE_EXPLORER, badgeRepository::countUniqueVendorReservations,
-            BadgeName.LOYAL_SHOPPER, badgeRepository::countBundlesFromSameVendor,
-            BadgeName.HOT_SHOPPER, badgeRepository::countTotalBundlesForUser,
-            BadgeName.WASTE_KING, badgeRepository::countWasteSaved,
-            BadgeName.CATEGORY_KING, badgeRepository::countDistinctUserCategories,
-            BadgeName.WEEKLY_WARRIOR, streakRepository::getStreakForUser,
-            BadgeName.WALLET_WATCHER, badgeRepository::countMoneySaved
-    );
+    private Map<BadgeName, Function<UUID, ? extends Number>> badgeRepositoryLookup;
 
+    @PostConstruct
+    public void init() {
+        badgeRepositoryLookup = Map.of(
+                BadgeName.THE_EXPLORER, badgeRepository::countUniqueVendorReservations,
+                BadgeName.LOYAL_SHOPPER, badgeRepository::countBundlesFromSameVendor,
+                BadgeName.HOT_SHOPPER, badgeRepository::countTotalBundlesForUser,
+                BadgeName.WASTE_KING, badgeRepository::countWasteSaved,
+                BadgeName.CATEGORY_KING, badgeRepository::countDistinctUserCategories,
+                BadgeName.WEEKLY_WARRIOR, streakRepository::getStreakForUser,
+                BadgeName.WALLET_WATCHER, badgeRepository::countMoneySaved
+        );
+    }
 
 
     /**
