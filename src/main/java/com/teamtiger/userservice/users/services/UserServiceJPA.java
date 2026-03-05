@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 @Service
 @RequiredArgsConstructor
@@ -298,11 +299,29 @@ public class UserServiceJPA implements UserService {
 
         Set<Badge> badges = user.getBadges();
 
+        BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
+                Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
+                if(badgeGrade == BadgeGrade.UNRANKED) {
+                    return thresholds[0];
+                }
+
+                if(badgeGrade == BadgeGrade.BRONZE) {
+                    return thresholds[1];
+                }
+
+                if(badgeGrade == BadgeGrade.SILVER) {
+                    return thresholds[2];
+                }
+
+                return null;
+        };
+
         return badges.stream()
                 .map(entity -> UserBadgeDTO.builder()
                         .name(entity.getName())
                         .grade(entity.getGrade())
                         .amountLeft(entity.getAmountLeft())
+                        .threshold(findNextThreshold.apply(entity.getName(), entity.getGrade()).doubleValue())
                         .build())
                 .toList();
     }
