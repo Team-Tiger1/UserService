@@ -25,7 +25,7 @@ public class Badge {
     private BadgeGrade grade;
 
     @Column(nullable = false)
-    private double amountLeft;
+    private double current_amount;
 
 
 }
