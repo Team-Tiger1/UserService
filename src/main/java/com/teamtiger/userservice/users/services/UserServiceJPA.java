@@ -81,7 +81,7 @@ public class UserServiceJPA implements UserService {
             newBadges.add(Badge.builder()
                     .name(badgeName)
                     .grade(BadgeGrade.UNRANKED)
-                    .amountLeft(BadgeValues.BADGE_THRESHOLDS.get(badgeName)[0])
+                    .currentAmount(0)
                     .build());
 
         }
@@ -320,7 +320,7 @@ public class UserServiceJPA implements UserService {
                 .map(entity -> UserBadgeDTO.builder()
                         .name(entity.getName())
                         .grade(entity.getGrade())
-                        .amountLeft(entity.getAmountLeft())
+                        .currentAmount(entity.getCurrentAmount())
                         .threshold(findNextThreshold.apply(entity.getName(), entity.getGrade()).doubleValue())
                         .build())
                 .toList();
