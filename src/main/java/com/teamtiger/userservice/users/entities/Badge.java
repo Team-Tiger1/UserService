@@ -2,6 +2,7 @@ package com.teamtiger.userservice.users.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Getter
@@ -24,8 +25,9 @@ public class Badge {
     @Column(nullable = false)
     private BadgeGrade grade;
 
+    @ColumnDefault("0.0")
     @Column(nullable = false)
-    private double currentAmount;
+    private double currentAmount = 0.0;
 
 
 }
