@@ -251,6 +251,14 @@ public class UserController {
         }
     }
 
+    /**
+     * Processes a users request to get all their badges
+     * @param authHeader Authorization Header
+     * @return 200 with a list of badges,
+     * 404 if the user is not found
+     * 401 if the role is not USER
+     * 500 if other error occurs
+     */
     @Operation(summary = "Get all badges for a user")
     @GetMapping("/badges")
     public ResponseEntity<?> getBadgesForUser(@RequestHeader("Authorization") String authHeader) {
