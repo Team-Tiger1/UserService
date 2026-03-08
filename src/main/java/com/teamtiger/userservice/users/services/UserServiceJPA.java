@@ -295,7 +295,7 @@ public class UserServiceJPA implements UserService {
 
         UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
 
-        Set<Badge> badges = badgeRepository.findAllByUserId(id);
+        Set<Badge> badges = badgeRepository.findAllByUserId(id.toString());
 
         BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
                 Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
@@ -315,12 +315,18 @@ public class UserServiceJPA implements UserService {
         };
 
         return badges.stream()
-                .map(entity -> UserBadgeDTO.builder()
-                        .name(entity.getName())
-                        .grade(entity.getGrade())
-                        .currentAmount(entity.getCurrentAmount())
-                        .threshold(findNextThreshold.apply(entity.getName(), entity.getGrade()).doubleValue())
-                        .build())
+                .map(entity -> {
+                    Number threshold = findNextThreshold.apply(entity.getName(), entity.getGrade());
+
+                    double safeThreshold = (threshold != null) ? threshold.doubleValue() : 0.0;
+
+                    return UserBadgeDTO.builder()
+                            .name(entity.getName())
+                            .grade(entity.getGrade())
+                            .currentAmount(entity.getCurrentAmount())
+                            .threshold(safeThreshold)
+                            .build();
+                })
                 .toList();
     }
 
