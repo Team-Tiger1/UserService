@@ -43,10 +43,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Badge> badges = new HashSet<>();
-
     @Version
     private Long version;
 

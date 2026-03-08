@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.UUID;
+
 @Entity
 @Getter
 @Setter
@@ -29,9 +31,8 @@ public class Badge {
     @Column(nullable = false)
     private double currentAmount = 0.0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false, updatable = false)
+    private UUID userId;
 
 
 }

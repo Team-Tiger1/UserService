@@ -26,7 +26,6 @@ import java.util.function.Function;
 public class ReservationCollectedListener {
 
     private final StreakRepository streakRepository;
-    private final UserRepository userRepository;
     private final BadgeRepository badgeRepository;
 
     //Holds method reference for each badge
@@ -91,8 +90,7 @@ public class ReservationCollectedListener {
         try {
 
             //Get badges for the user
-            User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-            Set<Badge> badges = user.getBadges();
+            Set<Badge> badges = badgeRepository.findAllByUserId(userId);
 
             for(Badge badge : badges) {
 
