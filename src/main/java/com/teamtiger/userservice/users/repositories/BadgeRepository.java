@@ -4,6 +4,7 @@ import com.teamtiger.userservice.users.entities.Badge;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Set;
 import java.util.UUID;
 
 public interface BadgeRepository extends JpaRepository<Badge, UUID> {
@@ -49,6 +50,8 @@ public interface BadgeRepository extends JpaRepository<Badge, UUID> {
             "WHERE r.user_id = :userId AND r.status = 'COLLECTED'",
     nativeQuery = true)
     Double countMoneySaved(UUID userId);
+
+    Set<Badge> findAllByUserId(UUID userId);
 
 
 

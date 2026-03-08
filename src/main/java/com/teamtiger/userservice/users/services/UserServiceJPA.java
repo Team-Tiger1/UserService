@@ -6,6 +6,7 @@ import com.teamtiger.userservice.auth.models.Role;
 import com.teamtiger.userservice.users.entities.*;
 import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
+import com.teamtiger.userservice.users.repositories.BadgeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class UserServiceJPA implements UserService {
     private final PasswordHasher passwordHasher;
     private final UsernameGenerator usernameGenerator;
     private final StreakRepository streakRepository;
+    private final BadgeRepository badgeRepository;
 
     /**
      * Creates a new user and stores the record on the database
@@ -294,14 +296,7 @@ public class UserServiceJPA implements UserService {
 
         UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
 
-        User user = userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
-
-        Set<Badge> badges = user.getBadges();
-        System.out.println("Got badges");
-        for(Badge badge : badges) {
-            System.out.println(badge.getId() + " " + badge.getName() + " " + badge.getGrade());
-        }
+        Set<Badge> badges = badgeRepository.findAllByUserId(id);
 
         BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
                 Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
