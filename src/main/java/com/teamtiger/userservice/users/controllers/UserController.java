@@ -286,6 +286,7 @@ public class UserController {
      * @param authHeader Authorization Header
      * @return 204 if Account deleted and 401 if account role is not USER
      */
+    @Operation(summary = "Allows a user to delete their account and associated information")
     @DeleteMapping
     public ResponseEntity<?> deleteUserAccount(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -301,6 +302,28 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     * Processes a users request to logout
+     * @return Sets the users refresh token cookie to be expired
+     */
+    @Operation(summary = "Allows a user to logout, invalidating the refresh token")
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .build();
+    }
+
+
 
 
 }
