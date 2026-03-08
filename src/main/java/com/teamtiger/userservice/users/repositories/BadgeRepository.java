@@ -55,6 +55,8 @@ public interface BadgeRepository extends JpaRepository<Badge, UUID> {
     @Query(value = "SELECT b FROM Badge AS b WHERE b.user.id = :userId")
     Set<Badge> findAllByUserId(UUID userId);
 
+    void deleteAllByUserId(UUID userId);
+
 
 
 

@@ -331,6 +331,29 @@ public class UserServiceJPA implements UserService {
     }
 
     /**
+     * Deletes user associated information
+     * @param accessToken JWT Token
+     */
+    @Override
+    public void deleteUser(String accessToken) {
+
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        streakRepository.deleteById(id);
+
+        badgeRepository.deleteAllByUserId(id);
+
+        userRepository.deleteById(id);
+
+    }
+
+    /**
      * Maps database entities to DTOs
      */
     private static class UserMapper {
