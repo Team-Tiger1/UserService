@@ -52,7 +52,7 @@ public interface BadgeRepository extends JpaRepository<Badge, UUID> {
     nativeQuery = true)
     Double countMoneySaved(UUID userId);
 
-    Set<Badge> findAllByUser_Id(UUID userId);
+    Set<Badge> findAllByUserId(UUID userId);
 
     void deleteAllByUserId(UUID userId);
 

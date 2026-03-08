@@ -54,8 +54,10 @@ public class UserServiceJPA implements UserService {
                 .username(username)
                 .email(userDTO.getEmail())
                 .password(hashedPassword)
-                .badges(createAllUnrankedBadges())
                 .build();
+
+        //Save badges
+        badgeRepository.saveAll(createAllUnrankedBadges(user.getId()));
 
         //Save user entity to DB
         try {
@@ -76,7 +78,7 @@ public class UserServiceJPA implements UserService {
                 .build();
     }
 
-    private Set<Badge> createAllUnrankedBadges() {
+    private Set<Badge> createAllUnrankedBadges(UUID userId) {
         Set<Badge> newBadges = new HashSet<>();
         for (BadgeName badgeName : BadgeValues.BADGE_THRESHOLDS.keySet()) {
 
@@ -84,6 +86,7 @@ public class UserServiceJPA implements UserService {
                     .name(badgeName)
                     .grade(BadgeGrade.UNRANKED)
                     .currentAmount(0)
+                    .userId(userId)
                     .build());
 
         }
@@ -295,7 +298,7 @@ public class UserServiceJPA implements UserService {
 
         UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
 
-        Set<Badge> badges = badgeRepository.findAllByUser_Id(id);
+        Set<Badge> badges = badgeRepository.findAllByUserId(id);
         System.out.println(badges.size());
 
         BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
