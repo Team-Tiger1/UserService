@@ -44,7 +44,7 @@ public class User {
     private String password;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Badge> badges = new HashSet<>();
 
     @Version
