@@ -56,9 +56,6 @@ public class UserServiceJPA implements UserService {
                 .password(hashedPassword)
                 .build();
 
-        //Save badges
-        badgeRepository.saveAll(createAllUnrankedBadges(user.getId()));
-
         //Save user entity to DB
         try {
             user = userRepository.save(user);
@@ -68,6 +65,9 @@ public class UserServiceJPA implements UserService {
             user.setUsername(username);
             user = userRepository.save(user);
         }
+
+        //Save badges
+        badgeRepository.saveAll(createAllUnrankedBadges(user.getId()));
 
         //Get Refresh Token
         String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), Role.USER);
