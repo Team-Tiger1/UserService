@@ -257,7 +257,6 @@ public class UserServiceJPA implements UserService {
 
         //Convert DTOs to Entities
         List<User> entityList = users.stream()
-                .peek(dto -> System.out.println(dto.getUserId()))
                 .map(dto -> User.builder()
                         .id(dto.getUserId())
                         .username(usernameGenerator.generateUsername())
