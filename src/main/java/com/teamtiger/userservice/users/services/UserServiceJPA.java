@@ -257,7 +257,6 @@ public class UserServiceJPA implements UserService {
 
         //Convert DTOs to Entities
         List<User> entityList = users.stream()
-                .peek(dto -> System.out.println(dto.getUserId()))
                 .map(dto -> User.builder()
                         .id(dto.getUserId())
                         .username(usernameGenerator.generateUsername())
@@ -299,6 +298,10 @@ public class UserServiceJPA implements UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         Set<Badge> badges = user.getBadges();
+        System.out.println("Got badges");
+        for(Badge badge : badges) {
+            System.out.println(badge.getId() + " " + badge.getName() + " " + badge.getGrade());
+        }
 
         BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
                 Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
