@@ -45,6 +45,7 @@ public class User {
 
     @Builder.Default
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id")
     private Set<Badge> badges = new HashSet<>();
 
     @Version

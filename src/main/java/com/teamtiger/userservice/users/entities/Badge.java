@@ -29,9 +29,5 @@ public class Badge {
     @Column(nullable = false)
     private double currentAmount = 0.0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
 
 }
