@@ -51,6 +51,7 @@ public interface BadgeRepository extends JpaRepository<Badge, UUID> {
     nativeQuery = true)
     Double countMoneySaved(UUID userId);
 
+    @Query(value = "SELECT * FROM badges WHERE user_id = :userId", nativeQuery = true)
     Set<Badge> findAllByUserId(UUID userId);
 
 

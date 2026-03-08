@@ -286,7 +286,6 @@ public class UserServiceJPA implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<UserBadgeDTO> getAllBadgesForUser(String accessToken) {
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
 
