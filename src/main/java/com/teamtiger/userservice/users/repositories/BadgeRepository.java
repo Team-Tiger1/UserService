@@ -53,6 +53,8 @@ public interface BadgeRepository extends JpaRepository<Badge, UUID> {
 
     Set<Badge> findAllByUserId(UUID userId);
 
+    void deleteAllByUserId(UUID userId);
+
 
 
 

@@ -273,5 +273,26 @@ public class UserController {
         }
     }
 
+    /**
+     * Processes a users request to delete their account
+     * @param authHeader Authorization Header
+     * @return 204 if Account deleted and 401 if account role is not USER
+     */
+    @DeleteMapping
+    public ResponseEntity<?> deleteUserAccount(@RequestHeader("Authorization") String authHeader) {
+        try {
+            userService.deleteUser(authHeader);
+            return ResponseEntity.noContent().build();
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
 }
