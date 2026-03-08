@@ -298,6 +298,10 @@ public class UserServiceJPA implements UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         Set<Badge> badges = user.getBadges();
+        System.out.println("Got badges");
+        for(Badge badge : badges) {
+            System.out.println(badge.getId() + " " + badge.getName() + " " + badge.getGrade());
+        }
 
         BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
                 Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
