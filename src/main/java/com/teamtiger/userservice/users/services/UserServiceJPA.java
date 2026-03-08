@@ -295,7 +295,7 @@ public class UserServiceJPA implements UserService {
 
         UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
 
-        Set<Badge> badges = badgeRepository.findAllByUserId(id.toString());
+        Set<Badge> badges = badgeRepository.findAllByUserId(id);
 
         BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
                 Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
