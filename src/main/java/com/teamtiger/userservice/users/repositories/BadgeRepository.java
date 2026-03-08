@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Set;
 import java.util.UUID;
 
-public interface BadgeRepository extends JpaRepository<Badge, UUID> {
+public interface BadgeRepository extends JpaRepository<Badge, Long> {
 
     @Query(value = "SELECT COUNT(DISTINCT v.vendor_id) FROM vendor AS v " +
             "JOIN bundles b ON b.vendor_id = v.vendor_id " +
