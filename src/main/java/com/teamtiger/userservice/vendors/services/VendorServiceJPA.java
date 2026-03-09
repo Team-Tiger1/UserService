@@ -15,6 +15,7 @@ import com.teamtiger.userservice.vendors.exceptions.DisputeNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -252,6 +253,7 @@ public class VendorServiceJPA implements VendorService{
      * Gets all vendors from the database
      * @return A list of vendors
      */
+    @Cacheable(value = "vendors")
     @Override
     public List<BasicVendorDTO> getAllVendors() {
 
@@ -273,6 +275,7 @@ public class VendorServiceJPA implements VendorService{
      * @param vendorId The vendors UUID
      */
     @Override
+    @Cacheable(value = "vendor_info", key = "#vendorId")
     public VendorDTO getDetailedVendorInfo(UUID vendorId) {
 
         Vendor vendor = vendorRepository.findById(vendorId)
@@ -286,6 +289,7 @@ public class VendorServiceJPA implements VendorService{
      * @param accessToken The vendors access token
      * @return A list of disputes
      */
+    @Cacheable(value = "user_disputes", key = "#accessToken")
     @Override
     public List<DisputeDTO> getAllDisputes(String accessToken) {
 
