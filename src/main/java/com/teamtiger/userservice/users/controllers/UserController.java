@@ -350,7 +350,7 @@ public class UserController {
         }
     }
           
-          
+    /**
      * Processes a users request to create a dispute
      * @param authHeader The authorization header
      * @param createDisputeDTO The reasons for the dispute

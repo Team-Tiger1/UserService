@@ -406,6 +406,7 @@ public class UserServiceJPA implements UserService {
                 .position(rank)
                 .username(username)
                 .value(value)
+                .build();
       }
 
     /**
