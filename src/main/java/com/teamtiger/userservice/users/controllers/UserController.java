@@ -370,6 +370,7 @@ public class UserController {
         }
 
         catch (RuntimeException e) {
+            e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
 
