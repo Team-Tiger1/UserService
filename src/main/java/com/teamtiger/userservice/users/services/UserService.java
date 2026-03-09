@@ -24,4 +24,6 @@ public interface UserService {
 
     void deleteUser(String accessToken);
 
+    DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO);
+
 }

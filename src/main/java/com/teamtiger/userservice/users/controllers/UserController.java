@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.micrometer.observation.autoconfigure.ObservationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -321,6 +322,34 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .build();
+    }
+
+    /**
+     * Processes a users request to create a dispute
+     * @param authHeader The authorization header
+     * @param createDisputeDTO The reasons for the dispute
+     * @return The saved dispute with vendor and bundle information
+     */
+    @Operation(summary = "Allows a User to Create a Dispute for a Bundle")
+    @PostMapping("/dispute")
+    public ResponseEntity<?> createDispute(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody CreateDisputeDTO createDisputeDTO) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            DisputeDTO disputeDTO = userService.createDispute(accessToken, createDisputeDTO);
+            return ResponseEntity.ok(disputeDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

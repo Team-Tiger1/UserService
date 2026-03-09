@@ -4,9 +4,16 @@ import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
 import com.teamtiger.userservice.users.entities.*;
+import com.teamtiger.userservice.users.entities.badges.Badge;
+import com.teamtiger.userservice.users.entities.badges.BadgeGrade;
+import com.teamtiger.userservice.users.entities.badges.BadgeName;
+import com.teamtiger.userservice.users.entities.badges.BadgeValues;
+import com.teamtiger.userservice.users.entities.disputes.Dispute;
+import com.teamtiger.userservice.users.entities.disputes.DisputeStatus;
 import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.repositories.BadgeRepository;
+import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +38,7 @@ public class UserServiceJPA implements UserService {
     private final UsernameGenerator usernameGenerator;
     private final StreakRepository streakRepository;
     private final BadgeRepository badgeRepository;
+    private final DisputeRepository disputeRepository;
 
     /**
      * Creates a new user and stores the record on the database
@@ -353,6 +361,57 @@ public class UserServiceJPA implements UserService {
         badgeRepository.deleteAllByUserId(id);
 
         userRepository.deleteById(id);
+
+    }
+
+    /**
+     * Validates dispute information, saves it and returns related dispute
+     * @param accessToken User access token
+     * @param createDisputeDTO Dispute information
+     * @return Saved dispute
+     */
+    @Override
+    public DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO) {
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User reference
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        //Check if bundle exists
+        boolean doesBundleExist = disputeRepository.doesBundleExist(createDisputeDTO.getBundleId());
+        if(!doesBundleExist) {
+            throw new RuntimeException();
+        }
+
+        //Creates and saves bundle
+        Dispute dispute = Dispute.builder()
+                .bundleId(createDisputeDTO.getBundleId())
+                .status(DisputeStatus.SUBMITTED)
+                .reason(createDisputeDTO.getReason())
+                .description(createDisputeDTO.getDescription())
+                .user(user)
+                .build();
+
+        Dispute savedDispute = disputeRepository.save(dispute);
+
+        //Find vendor and bundle names
+        String vendorName = disputeRepository.findVendorNameFromBundle(createDisputeDTO.getBundleId());
+        String bundleName = disputeRepository.findBundleName(createDisputeDTO.getBundleId());
+
+        return DisputeDTO.builder()
+                .vendorName(vendorName)
+                .bundleName(bundleName)
+                .status(savedDispute.getStatus())
+                .description(savedDispute.getDescription())
+                .reason(savedDispute.getReason())
+                .build();
 
     }
 
