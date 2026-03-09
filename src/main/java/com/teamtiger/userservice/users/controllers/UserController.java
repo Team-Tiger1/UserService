@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -321,6 +322,31 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .build();
+    }
+
+    /**
+     * Processes a users request to get the top 10 users and themselves
+     * @param authHeader Authorization Header
+     * @param option MONEY or WASTE
+     * @return A list of the top 10 users and your current position
+     */
+    @Operation(summary = "Allows a user to get the leaderboard for MONEY (saved) or WASTE (saved)")
+    @GetMapping("/leaderboard")
+    public ResponseEntity<?> getLeaderboard(@RequestHeader("Authorization") String authHeader,
+                                            @RequestParam(name = "metric") LeaderboardOption option) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            LeaderboardDTO leaderboardDTO = userService.getLeaderboard(accessToken, option);
+            return ResponseEntity.ok(leaderboardDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

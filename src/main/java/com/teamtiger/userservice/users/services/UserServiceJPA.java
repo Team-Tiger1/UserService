@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 
 @Service
@@ -353,6 +350,61 @@ public class UserServiceJPA implements UserService {
         badgeRepository.deleteAllByUserId(id);
 
         userRepository.deleteById(id);
+
+    }
+
+    /**
+     * Gets the leaderboard data for the user
+     * @param accessToken The users access token
+     * @param option MONEY or WASTE for different metrics
+     * @return Top 10 users and your user's rank
+     */
+    @Override
+    public LeaderboardDTO getLeaderboard(String accessToken, LeaderboardOption option) {
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        List<Object[]> topUsers;
+        List<Object[]> currentUser;
+
+        //Get associated data from database
+        if(option == LeaderboardOption.WASTE) {
+            topUsers = userRepository.countTopWasteSaved();
+            currentUser = userRepository.findUserRankByWasteSaved(id);
+        } else {
+            topUsers = userRepository.countTopMoneySaved();
+            currentUser = userRepository.findUserRankByMoneySaved(id);
+        }
+
+        //Cast data to DTO
+        List<LeaderboardDTO.LeaderboardEntry> entries = new ArrayList<>();
+        for(Object[] topUser : topUsers) {
+            String username = (String) topUser[0];
+            double value = (double) topUser[1];
+            entries.add(new LeaderboardDTO.LeaderboardEntry(username, value));
+        }
+
+        String username = (String) currentUser.get(0)[0];
+        int rank = ((Number) currentUser.get(0)[1]).intValue();
+        double value = ((Number) currentUser.get(0)[2]).doubleValue();
+
+        //Check if value is negative
+        if(value < 0) {
+            value = 0;
+        }
+
+        return LeaderboardDTO.builder()
+                .top(entries)
+                .position(rank)
+                .username(username)
+                .value(value)
+                .build();
 
     }
 

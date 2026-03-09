@@ -24,4 +24,6 @@ public interface UserService {
 
     void deleteUser(String accessToken);
 
+    LeaderboardDTO getLeaderboard(String accessToken, LeaderboardOption option);
+
 }
