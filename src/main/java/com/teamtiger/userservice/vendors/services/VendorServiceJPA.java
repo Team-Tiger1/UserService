@@ -3,17 +3,22 @@ package com.teamtiger.userservice.vendors.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
+import com.teamtiger.userservice.users.entities.disputes.Dispute;
+import com.teamtiger.userservice.users.entities.disputes.DisputeReason;
 import com.teamtiger.userservice.users.exceptions.AuthorizationException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
+import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
+import com.teamtiger.userservice.vendors.exceptions.DisputeNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -21,6 +26,7 @@ import java.util.UUID;
 public class VendorServiceJPA implements VendorService{
 
     private final VendorRepository vendorRepository;
+    private final DisputeRepository disputeRepository;
     private final PasswordHasher passwordHasher;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -273,6 +279,83 @@ public class VendorServiceJPA implements VendorService{
                 .orElseThrow(CompanyNotFoundException::new);
 
         return VendorMapper.toDTO(vendor);
+    }
+
+    /**
+     * Gets all disputes related with a vendor
+     * @param accessToken The vendors access token
+     * @return A list of disputes
+     */
+    @Override
+    public List<DisputeDTO> getAllDisputes(String accessToken) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract vendorId and query database
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Set<Dispute> savedDisputes = disputeRepository.findAllDisputesByVendor(vendorId);
+
+        return savedDisputes.stream()
+                .map(entity -> DisputeDTO.builder()
+                        .disputeId(entity.getId())
+                        .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
+                        .reason(entity.getReason())
+                        .description(entity.getDescription())
+                        .vendorResponse(entity.getVendorResponse())
+                        .status(entity.getStatus())
+                        .createdAt(entity.getTimeCreated())
+                        .build()
+                ).toList();
+    }
+
+
+    /**
+     * Validates the vendor, updates the dispute and saves it
+     * @param accessToken The vendors access token
+     * @param updateDisputeDTO The new information for the dispute
+     * @return The updated dispute
+     */
+    @Override
+    public DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract dispute information and query database
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Dispute savedDispute = disputeRepository.findById(updateDisputeDTO.getDisputeId())
+                .orElseThrow(DisputeNotFoundException::new);
+
+        //Check the target vendor is updating the dispute
+        if(!savedDispute.getVendorId().equals(vendorId)) {
+            throw new AuthorizationException();
+        }
+
+        //Update and save
+        savedDispute.setStatus(updateDisputeDTO.getFinalStatus());
+        savedDispute.setVendorResponse(updateDisputeDTO.getVendorResponse());
+
+        disputeRepository.save(savedDispute);
+
+        return DisputeDTO.builder()
+                .reason(savedDispute.getReason())
+                .status(savedDispute.getStatus())
+                .bundleName(disputeRepository.findBundleName(savedDispute.getBundleId()))
+                .description(savedDispute.getDescription())
+                .vendorResponse(savedDispute.getVendorResponse())
+                .createdAt(savedDispute.getTimeCreated())
+                .build();
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.teamtiger.userservice.users.models;
 
-import com.teamtiger.userservice.users.entities.BadgeGrade;
-import com.teamtiger.userservice.users.entities.BadgeName;
+import com.teamtiger.userservice.users.entities.badges.BadgeGrade;
+import com.teamtiger.userservice.users.entities.badges.BadgeName;
 import lombok.Builder;
 import lombok.Data;
 

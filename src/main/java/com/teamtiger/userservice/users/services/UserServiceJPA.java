@@ -4,21 +4,27 @@ import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
 import com.teamtiger.userservice.users.entities.*;
+import com.teamtiger.userservice.users.entities.badges.Badge;
+import com.teamtiger.userservice.users.entities.badges.BadgeGrade;
+import com.teamtiger.userservice.users.entities.badges.BadgeName;
+import com.teamtiger.userservice.users.entities.badges.BadgeValues;
+import com.teamtiger.userservice.users.entities.disputes.Dispute;
+import com.teamtiger.userservice.users.entities.disputes.DisputeStatus;
 import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
 import com.teamtiger.userservice.users.repositories.BadgeRepository;
+import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 
 @Service
@@ -31,6 +37,7 @@ public class UserServiceJPA implements UserService {
     private final UsernameGenerator usernameGenerator;
     private final StreakRepository streakRepository;
     private final BadgeRepository badgeRepository;
+    private final DisputeRepository disputeRepository;
 
     /**
      * Creates a new user and stores the record on the database
@@ -354,6 +361,106 @@ public class UserServiceJPA implements UserService {
 
         userRepository.deleteById(id);
 
+    }
+
+    /**
+     * Validates dispute information, saves it and returns related dispute
+     * @param accessToken User access token
+     * @param createDisputeDTO Dispute information
+     * @return Saved dispute
+     */
+    @Override
+    public DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO) {
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User reference
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        //Check if bundle exists
+        boolean doesBundleExist = disputeRepository.doesBundleExist(createDisputeDTO.getBundleId());
+        if(!doesBundleExist) {
+            throw new RuntimeException();
+        }
+
+        //Find vendor and bundle names
+        Map<String, Object> vendorDetails = disputeRepository.findVendorDetailsFromBundle(createDisputeDTO.getBundleId());
+
+        String vendorName = (String) vendorDetails.get("name");
+        UUID vendorId = (UUID) vendorDetails.get("vendor_id");
+
+        String bundleName = disputeRepository.findBundleName(createDisputeDTO.getBundleId());
+
+
+        //Creates and saves bundle
+        Dispute dispute = Dispute.builder()
+                .bundleId(createDisputeDTO.getBundleId())
+                .vendorId(vendorId)
+                .status(DisputeStatus.SUBMITTED)
+                .reason(createDisputeDTO.getReason())
+                .description(createDisputeDTO.getDescription())
+                .user(user)
+                .timeCreated(LocalDateTime.now())
+                .build();
+
+        Dispute savedDispute = disputeRepository.save(dispute);
+
+
+
+        return DisputeDTO.builder()
+                .vendorName(vendorName)
+                .bundleName(bundleName)
+                .status(savedDispute.getStatus())
+                .description(savedDispute.getDescription())
+                .reason(savedDispute.getReason())
+                .timeCreated(savedDispute.getTimeCreated())
+                .build();
+
+    }
+
+    /**
+     * Gets all associated disputes for a user
+     * @param accessToken The users access token
+     * @return A list of DisputeDTO's
+     */
+    @Override
+    public List<DisputeDTO> getDisputes(String accessToken) {
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User reference
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        //Map Disputes to DTO
+        return user.getDisputes().stream()
+                .map(entity -> {
+
+                            Map<String, Object> vendorDetails = disputeRepository.findVendorDetailsFromBundle(entity.getBundleId());
+                            String vendorName = (String) vendorDetails.get("name");
+
+                            return DisputeDTO.builder()
+                                    .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
+                                    .vendorName(vendorName)
+                                    .status(entity.getStatus())
+                                    .reason(entity.getReason())
+                                    .timeCreated(entity.getTimeCreated())
+                                    .description(entity.getDescription())
+                                    .build();
+
+                        }
+                ).toList();
     }
 
     /**

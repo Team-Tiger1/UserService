@@ -2,11 +2,14 @@ package com.teamtiger.userservice.users.services;
 
 import com.teamtiger.userservice.users.config.UserRabbitMQConfig;
 import com.teamtiger.userservice.users.entities.*;
+import com.teamtiger.userservice.users.entities.badges.Badge;
+import com.teamtiger.userservice.users.entities.badges.BadgeGrade;
+import com.teamtiger.userservice.users.entities.badges.BadgeName;
+import com.teamtiger.userservice.users.entities.badges.BadgeValues;
 import com.teamtiger.userservice.users.exceptions.UserNotFoundException;
 import com.teamtiger.userservice.users.models.events.ReservationCollectedEvent;
 import com.teamtiger.userservice.users.repositories.BadgeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
-import com.teamtiger.userservice.users.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;

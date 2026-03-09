@@ -279,6 +279,55 @@ public class VendorController {
         }
     }
 
+    /**
+     * Processes a vendors request to get all their disputes
+     * @param authHeader The Authorization Header
+     * @return A list of disputes
+     */
+    @Operation(summary = "Allows a vendor to get all their disputes")
+    @GetMapping("/disputes")
+    public ResponseEntity<?> getVendorDisputes(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<DisputeDTO> disputeDTOS = vendorService.getAllDisputes(accessToken);
+            return ResponseEntity.ok(disputeDTOS);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Proceses a vendors request to update a dispute
+     * @param authHeader The authorization header
+     * @param updateDisputeDTO The new status and response for the dispute
+     * @return The Updated Dispute
+     */
+    @Operation(summary = "Allows a vendor to update a dispute against them")
+    @PostMapping("/disputes")
+    public ResponseEntity<?> updateDispute(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UpdateDisputeDTO updateDisputeDTO) {
+
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            DisputeDTO disputeDTO = vendorService.updateDispute(accessToken, updateDisputeDTO);
+            return ResponseEntity.ok(disputeDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
 
 
 }

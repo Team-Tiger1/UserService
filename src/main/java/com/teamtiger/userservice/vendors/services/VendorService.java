@@ -23,4 +23,8 @@ public interface VendorService {
 
     VendorDTO getDetailedVendorInfo(UUID vendorId);
 
+    List<DisputeDTO> getAllDisputes(String accessToken);
+
+    DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO);
+
 }
