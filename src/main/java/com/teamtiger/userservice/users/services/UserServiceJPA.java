@@ -17,6 +17,7 @@ import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -468,7 +469,8 @@ public class UserServiceJPA implements UserService {
      * @param option Chooses between money and waste
      * @return List of entries
      */
-    private List<LeaderboardDTO.LeaderboardEntry> getTopTenLeaderBoard(LeaderboardOption option) {
+    @Cacheable(value = "leaderboard", key = "#option")
+    public List<LeaderboardDTO.LeaderboardEntry> getTopTenLeaderBoard(LeaderboardOption option) {
         List<Object[]> topUsers;
 
         //Get associated data from database
