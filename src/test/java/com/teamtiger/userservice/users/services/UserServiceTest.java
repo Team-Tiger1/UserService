@@ -36,6 +36,8 @@ import com.teamtiger.userservice.users.models.CreateUserDTO;
 import com.teamtiger.userservice.users.models.LoginDTO;
 import com.teamtiger.userservice.users.models.UserDTO;
 import com.teamtiger.userservice.users.models.UserRegisterDTO;
+import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 /**
  * Unit Tests for User Services
