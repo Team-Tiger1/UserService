@@ -279,6 +279,29 @@ public class VendorController {
         }
     }
 
+    /**
+     * Processes a vendors request to get all their disputes
+     * @param authHeader The Authorization Header
+     * @return A list of disputes
+     */
+    @Operation(summary = "Allows a vendor to get all their disputes")
+    @GetMapping("/disputes")
+    public ResponseEntity<?> getVendorDisputes(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<DisputeDTO> disputeDTOS = vendorService.getAllDisputes(accessToken);
+            return ResponseEntity.ok(disputeDTOS);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
 
 }
