@@ -370,24 +370,16 @@ public class UserServiceJPA implements UserService {
 
         UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
 
-        List<Object[]> topUsers;
+        //Get Top 10 Users
+        List<LeaderboardDTO.LeaderboardEntry> entries = getTopTenLeaderBoard(option);
+
         List<Object[]> currentUser;
 
         //Get associated data from database
         if(option == LeaderboardOption.WASTE) {
-            topUsers = userRepository.countTopWasteSaved();
             currentUser = userRepository.findUserRankByWasteSaved(id);
         } else {
-            topUsers = userRepository.countTopMoneySaved();
             currentUser = userRepository.findUserRankByMoneySaved(id);
-        }
-
-        //Cast data to DTO
-        List<LeaderboardDTO.LeaderboardEntry> entries = new ArrayList<>();
-        for(Object[] topUser : topUsers) {
-            String username = (String) topUser[0];
-            double value = (double) topUser[1];
-            entries.add(new LeaderboardDTO.LeaderboardEntry(username, value));
         }
 
         String username = (String) currentUser.get(0)[0];
@@ -405,6 +397,33 @@ public class UserServiceJPA implements UserService {
                 .username(username)
                 .value(value)
                 .build();
+
+    }
+
+    /**
+     * Calculates the top 10 users for money or waste saved
+     * @param option Chooses between money and waste
+     * @return List of entries
+     */
+    private List<LeaderboardDTO.LeaderboardEntry> getTopTenLeaderBoard(LeaderboardOption option) {
+        List<Object[]> topUsers;
+
+        //Get associated data from database
+        if(option == LeaderboardOption.WASTE) {
+            topUsers = userRepository.countTopWasteSaved();
+        } else {
+            topUsers = userRepository.countTopMoneySaved();
+        }
+
+        //Cast data to DTO
+        List<LeaderboardDTO.LeaderboardEntry> entries = new ArrayList<>();
+        for(Object[] topUser : topUsers) {
+            String username = (String) topUser[0];
+            double value = (double) topUser[1];
+            entries.add(new LeaderboardDTO.LeaderboardEntry(username, value));
+        }
+
+        return entries;
 
     }
 
