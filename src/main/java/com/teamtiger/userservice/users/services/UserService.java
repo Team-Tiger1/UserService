@@ -26,4 +26,6 @@ public interface UserService {
 
     DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO);
 
+    List<DisputeDTO> getDisputes(String accessToken);
+
 }

@@ -352,6 +352,33 @@ public class UserController {
         }
     }
 
+    /**
+     * Processes a users request to get all their disputes
+     * @param authHeader The authorization header
+     * @return A list of dispute's
+     */
+    @Operation(summary = "Allows a user to get all their disputes")
+    @GetMapping("/dispute")
+    public ResponseEntity<?> getDisputes(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<DisputeDTO> disputeDTOS = userService.getDisputes(accessToken);
+            return ResponseEntity.ok(disputeDTOS);
+        }
+
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
 
 

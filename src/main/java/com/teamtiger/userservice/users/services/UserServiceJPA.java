@@ -17,10 +17,12 @@ import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -397,6 +399,7 @@ public class UserServiceJPA implements UserService {
                 .reason(createDisputeDTO.getReason())
                 .description(createDisputeDTO.getDescription())
                 .user(user)
+                .timeCreated(LocalDateTime.now())
                 .build();
 
         Dispute savedDispute = disputeRepository.save(dispute);
@@ -411,8 +414,41 @@ public class UserServiceJPA implements UserService {
                 .status(savedDispute.getStatus())
                 .description(savedDispute.getDescription())
                 .reason(savedDispute.getReason())
+                .timeCreated(savedDispute.getTimeCreated())
                 .build();
 
+    }
+
+    /**
+     * Gets all associated disputes for a user
+     * @param accessToken The users access token
+     * @return A list of DisputeDTO's
+     */
+    @Override
+    public List<DisputeDTO> getDisputes(String accessToken) {
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User reference
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        //Map Disputes to DTO
+        return user.getDisputes().stream()
+                .map(entity -> DisputeDTO.builder()
+                        .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
+                        .vendorName(disputeRepository.findVendorNameFromBundle(entity.getBundleId()))
+                        .status(entity.getStatus())
+                        .reason(entity.getReason())
+                        .timeCreated(entity.getTimeCreated())
+                        .description(entity.getDescription())
+                        .build()
+                ).toList();
     }
 
     /**

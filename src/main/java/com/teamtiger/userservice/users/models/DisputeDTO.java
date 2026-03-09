@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 
 @Data
 @Builder
@@ -28,6 +30,8 @@ public class DisputeDTO {
     private DisputeReason reason;
 
     private String description;
+
+    private LocalDateTime timeCreated;
 
 
 }
