@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.micrometer.observation.autoconfigure.ObservationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -338,6 +339,62 @@ public class UserController {
             String accessToken = authHeader.replace("Bearer ", "");
             LeaderboardDTO leaderboardDTO = userService.getLeaderboard(accessToken, option);
             return ResponseEntity.ok(leaderboardDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+          
+          
+     * Processes a users request to create a dispute
+     * @param authHeader The authorization header
+     * @param createDisputeDTO The reasons for the dispute
+     * @return The saved dispute with vendor and bundle information
+     */
+    @Operation(summary = "Allows a User to Create a Dispute for a Bundle")
+    @PostMapping("/dispute")
+    public ResponseEntity<?> createDispute(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody CreateDisputeDTO createDisputeDTO) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            DisputeDTO disputeDTO = userService.createDispute(accessToken, createDisputeDTO);
+            return ResponseEntity.ok(disputeDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Processes a users request to get all their disputes
+     * @param authHeader The authorization header
+     * @return A list of dispute's
+     */
+    @Operation(summary = "Allows a user to get all their disputes")
+    @GetMapping("/dispute")
+    public ResponseEntity<?> getDisputes(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<DisputeDTO> disputeDTOS = userService.getDisputes(accessToken);
+            return ResponseEntity.ok(disputeDTOS);
+        }
+
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+
         }
 
         catch (AuthorizationException e) {

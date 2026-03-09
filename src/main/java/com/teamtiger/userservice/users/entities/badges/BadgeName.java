@@ -1,4 +1,4 @@
-package com.teamtiger.userservice.users.entities;
+package com.teamtiger.userservice.users.entities.badges;
 
 public enum BadgeName {
 

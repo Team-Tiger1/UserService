@@ -1,4 +1,4 @@
-package com.teamtiger.userservice.users.entities;
+package com.teamtiger.userservice.users.entities.badges;
 
 import jakarta.persistence.*;
 import lombok.*;
