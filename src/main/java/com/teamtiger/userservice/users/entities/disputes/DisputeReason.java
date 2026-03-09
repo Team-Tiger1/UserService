@@ -8,6 +8,7 @@ public enum DisputeReason {
     LOCATION_INACCESSIBLE,
     VENDOR_NO_SHOW,
     REFUSED_COLLECTION,
-    PAST_WINDOW
+    PAST_WINDOW,
+    OTHER
 
 }
