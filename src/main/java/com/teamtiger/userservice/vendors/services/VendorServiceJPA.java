@@ -11,6 +11,7 @@ import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
+import com.teamtiger.userservice.vendors.exceptions.DisputeNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
@@ -311,6 +312,50 @@ public class VendorServiceJPA implements VendorService{
                         .createdAt(entity.getTimeCreated())
                         .build()
                 ).toList();
+    }
+
+
+    /**
+     * Validates the vendor, updates the dispute and saves it
+     * @param accessToken The vendors access token
+     * @param updateDisputeDTO The new information for the dispute
+     * @return The updated dispute
+     */
+    @Override
+    public DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract dispute information and query database
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Dispute savedDispute = disputeRepository.findById(updateDisputeDTO.getDisputeId())
+                .orElseThrow(DisputeNotFoundException::new);
+
+        //Check the target vendor is updating the dispute
+        if(!savedDispute.getVendorId().equals(vendorId)) {
+            throw new AuthorizationException();
+        }
+
+        //Update and save
+        savedDispute.setStatus(updateDisputeDTO.getFinalStatus());
+        savedDispute.setVendorResponse(updateDisputeDTO.getVendorResponse());
+
+        disputeRepository.save(savedDispute);
+
+        return DisputeDTO.builder()
+                .reason(savedDispute.getReason())
+                .status(savedDispute.getStatus())
+                .bundleName(disputeRepository.findBundleName(savedDispute.getBundleId()))
+                .description(savedDispute.getDescription())
+                .vendorResponse(savedDispute.getVendorResponse())
+                .createdAt(savedDispute.getTimeCreated())
+                .build();
     }
 
     /**

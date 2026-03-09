@@ -25,4 +25,6 @@ public interface VendorService {
 
     List<DisputeDTO> getAllDisputes(String accessToken);
 
+    DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO);
+
 }

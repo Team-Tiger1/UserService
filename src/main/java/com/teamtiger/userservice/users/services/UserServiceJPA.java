@@ -24,10 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 
 @Service
@@ -392,9 +389,19 @@ public class UserServiceJPA implements UserService {
             throw new RuntimeException();
         }
 
+        //Find vendor and bundle names
+        Map<String, Object> vendorDetails = disputeRepository.findVendorDetailsFromBundle(createDisputeDTO.getBundleId());
+
+        String vendorName = (String) vendorDetails.get("name");
+        UUID vendorId = (UUID) vendorDetails.get("vendor_id");
+
+        String bundleName = disputeRepository.findBundleName(createDisputeDTO.getBundleId());
+
+
         //Creates and saves bundle
         Dispute dispute = Dispute.builder()
                 .bundleId(createDisputeDTO.getBundleId())
+                .vendorId(vendorId)
                 .status(DisputeStatus.SUBMITTED)
                 .reason(createDisputeDTO.getReason())
                 .description(createDisputeDTO.getDescription())
@@ -404,9 +411,7 @@ public class UserServiceJPA implements UserService {
 
         Dispute savedDispute = disputeRepository.save(dispute);
 
-        //Find vendor and bundle names
-        String vendorName = disputeRepository.findVendorNameFromBundle(createDisputeDTO.getBundleId());
-        String bundleName = disputeRepository.findBundleName(createDisputeDTO.getBundleId());
+
 
         return DisputeDTO.builder()
                 .vendorName(vendorName)
@@ -440,14 +445,21 @@ public class UserServiceJPA implements UserService {
 
         //Map Disputes to DTO
         return user.getDisputes().stream()
-                .map(entity -> DisputeDTO.builder()
-                        .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
-                        .vendorName(disputeRepository.findVendorNameFromBundle(entity.getBundleId()))
-                        .status(entity.getStatus())
-                        .reason(entity.getReason())
-                        .timeCreated(entity.getTimeCreated())
-                        .description(entity.getDescription())
-                        .build()
+                .map(entity -> {
+
+                            Map<String, Object> vendorDetails = disputeRepository.findVendorDetailsFromBundle(entity.getBundleId());
+                            String vendorName = (String) vendorDetails.get("name");
+
+                            return DisputeDTO.builder()
+                                    .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
+                                    .vendorName(vendorName)
+                                    .status(entity.getStatus())
+                                    .reason(entity.getReason())
+                                    .timeCreated(entity.getTimeCreated())
+                                    .description(entity.getDescription())
+                                    .build();
+
+                        }
                 ).toList();
     }
 
