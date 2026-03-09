@@ -3,14 +3,18 @@ package com.teamtiger.userservice.users.models;
 import com.teamtiger.userservice.users.entities.disputes.DisputeReason;
 import com.teamtiger.userservice.users.entities.disputes.DisputeStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DisputeDTO {
 
     private String vendorName;
