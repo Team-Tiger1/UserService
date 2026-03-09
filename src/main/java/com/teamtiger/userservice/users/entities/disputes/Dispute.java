@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -41,5 +42,8 @@ public class Dispute {
 
     @Column(updatable = false)
     private String vendorResponse;
+
+    @Column(updatable = false)
+    private LocalDateTime timeCreated;
 
 }
