@@ -364,13 +364,13 @@ public class UserServiceJPA implements UserService {
     }
 
     /**
-     * Validates dispute information, saves it and returns related dispute
-     * @param accessToken User access token
-     * @param createDisputeDTO Dispute information
-     * @return Saved dispute
+     * Gets the leaderboard data for the user
+     * @param accessToken The users access token
+     * @param option MONEY or WASTE for different metrics
+     * @return Top 10 users and your user's rank
      */
     @Override
-    public DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO) {
+    public LeaderboardDTO getLeaderboard(String accessToken, LeaderboardOption option) {  
 
         //Validate role
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
@@ -378,6 +378,44 @@ public class UserServiceJPA implements UserService {
             throw new AuthorizationException();
         }
 
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //Get Top 10 Users
+        List<LeaderboardDTO.LeaderboardEntry> entries = getTopTenLeaderBoard(option);
+
+        List<Object[]> currentUser;
+
+        //Get associated data from database
+        if(option == LeaderboardOption.WASTE) {
+            currentUser = userRepository.findUserRankByWasteSaved(id);
+        } else {
+            currentUser = userRepository.findUserRankByMoneySaved(id);
+        }
+
+        String username = (String) currentUser.get(0)[0];
+        int rank = ((Number) currentUser.get(0)[1]).intValue();
+        double value = ((Number) currentUser.get(0)[2]).doubleValue();
+
+        //Check if value is negative
+        if(value < 0) {
+            value = 0;
+        }
+
+        return LeaderboardDTO.builder()
+                .top(entries)
+                .position(rank)
+                .username(username)
+                .value(value)
+      }
+
+    /**
+     * Validates dispute information, saves it and returns related dispute
+     * @param accessToken User access token
+     * @param createDisputeDTO Dispute information
+     * @return Saved dispute
+     */
+    @Override
+    public DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO) {
         //Get User reference
         UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
         User user = userRepository.findById(userId)
@@ -421,7 +459,33 @@ public class UserServiceJPA implements UserService {
                 .reason(savedDispute.getReason())
                 .timeCreated(savedDispute.getTimeCreated())
                 .build();
+    }
+      
 
+    /**
+     * Calculates the top 10 users for money or waste saved
+     * @param option Chooses between money and waste
+     * @return List of entries
+     */
+    private List<LeaderboardDTO.LeaderboardEntry> getTopTenLeaderBoard(LeaderboardOption option) {
+        List<Object[]> topUsers;
+
+        //Get associated data from database
+        if(option == LeaderboardOption.WASTE) {
+            topUsers = userRepository.countTopWasteSaved();
+        } else {
+            topUsers = userRepository.countTopMoneySaved();
+        }
+
+        //Cast data to DTO
+        List<LeaderboardDTO.LeaderboardEntry> entries = new ArrayList<>();
+        for(Object[] topUser : topUsers) {
+            String username = (String) topUser[0];
+            double value = (double) topUser[1];
+            entries.add(new LeaderboardDTO.LeaderboardEntry(username, value));
+        }
+
+        return entries;
     }
 
     /**
