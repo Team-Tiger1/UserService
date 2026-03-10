@@ -1,7 +1,9 @@
 package com.teamtiger.userservice.vendors.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
@@ -10,6 +12,8 @@ import java.util.UUID;
  */
 @Builder
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class BasicVendorDTO {
 
     private UUID vendorId;

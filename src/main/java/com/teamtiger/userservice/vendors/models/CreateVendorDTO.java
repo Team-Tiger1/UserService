@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 /**
@@ -14,6 +15,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class CreateVendorDTO {
 
     @NotBlank

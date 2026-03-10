@@ -3,7 +3,9 @@ package com.teamtiger.userservice.vendors.models;
 import com.teamtiger.userservice.vendors.VendorConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 /**
