@@ -25,7 +25,7 @@ public interface DisputeRepository extends JpaRepository<Dispute, UUID> {
     @Query(value = "SELECT d FROM disputes AS d " +
             "JOIN bundles b ON b.bundle_id = d.bundle_id " +
             "WHERE b.vendor_id = :vendorId " +
-            "ORDER BY d.status, d.timeCreated", nativeQuery = true)
+            "ORDER BY d.status, d.time_created", nativeQuery = true)
     Set<Dispute> findAllDisputesByVendor(UUID vendorId);
 
 
