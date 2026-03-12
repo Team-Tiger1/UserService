@@ -17,6 +17,9 @@ import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -39,6 +42,7 @@ public class UserServiceJPA implements UserService {
     private final StreakRepository streakRepository;
     private final BadgeRepository badgeRepository;
     private final DisputeRepository disputeRepository;
+    private final CacheManager cacheManager;
 
     /**
      * Creates a new user and stores the record on the database
@@ -434,6 +438,13 @@ public class UserServiceJPA implements UserService {
 
         String vendorName = (String) vendorDetails.get("name");
         UUID vendorId = (UUID) vendorDetails.get("vendor_id");
+
+        //Evict from cache
+
+        Cache userDisputes = cacheManager.getCache("user_disputes");
+        if(userDisputes != null) {
+            userDisputes.evict(vendorId);
+        }
 
         String bundleName = disputeRepository.findBundleName(createDisputeDTO.getBundleId());
 

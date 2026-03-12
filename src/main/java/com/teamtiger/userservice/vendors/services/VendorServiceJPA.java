@@ -15,6 +15,7 @@ import com.teamtiger.userservice.vendors.exceptions.DisputeNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -289,7 +290,7 @@ public class VendorServiceJPA implements VendorService{
      * @param accessToken The vendors access token
      * @return A list of disputes
      */
-    @Cacheable(value = "user_disputes", key = "#accessToken")
+    @Cacheable(value = "user_disputes", key = "@jwtTokenUtil.getUuidFromToken(#accessToken)")
     @Override
     public List<DisputeDTO> getAllDisputes(String accessToken) {
 
@@ -325,6 +326,7 @@ public class VendorServiceJPA implements VendorService{
      * @param updateDisputeDTO The new information for the dispute
      * @return The updated dispute
      */
+    @CacheEvict(value = "user_disputes", key = "@jwtTokenUtil.getUuidFromToken(#accessToken)")
     @Override
     public DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO) {
 
