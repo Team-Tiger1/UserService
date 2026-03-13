@@ -292,8 +292,20 @@ public class UserController {
     @DeleteMapping
     public ResponseEntity<?> deleteUserAccount(@RequestHeader("Authorization") String authHeader) {
         try {
-            userService.deleteUser(authHeader);
-            return ResponseEntity.noContent().build();
+            String accessToken = authHeader.replace("Bearer ", "");
+            userService.deleteUser(accessToken);
+
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", null)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+
+            return ResponseEntity.noContent()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .build();
         }
 
         catch (AuthorizationException e) {

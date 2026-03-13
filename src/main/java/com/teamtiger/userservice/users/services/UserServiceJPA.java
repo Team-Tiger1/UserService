@@ -350,6 +350,7 @@ public class UserServiceJPA implements UserService {
      * @param accessToken JWT Token
      */
     @Override
+    @Transactional
     public void deleteUser(String accessToken) {
 
         String role = jwtTokenUtil.getRoleFromToken(accessToken);
