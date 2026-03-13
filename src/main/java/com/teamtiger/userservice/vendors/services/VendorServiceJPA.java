@@ -355,6 +355,7 @@ public class VendorServiceJPA implements VendorService{
         disputeRepository.save(savedDispute);
 
         return DisputeDTO.builder()
+                .disputeId(savedDispute.getId())
                 .reason(savedDispute.getReason())
                 .status(savedDispute.getStatus())
                 .bundleName(disputeRepository.findBundleName(savedDispute.getBundleId()))

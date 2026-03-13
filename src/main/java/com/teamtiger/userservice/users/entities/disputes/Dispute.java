@@ -42,7 +42,6 @@ public class Dispute {
     @Column(updatable = false, nullable = false)
     private String description;
 
-    @Column(updatable = false)
     private String vendorResponse;
 
     @Column(updatable = false)

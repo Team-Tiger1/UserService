@@ -441,7 +441,6 @@ public class UserServiceJPA implements UserService {
         UUID vendorId = (UUID) vendorDetails.get("vendor_id");
 
         //Evict from cache
-
         Cache userDisputes = cacheManager.getCache("user_disputes");
         if(userDisputes != null) {
             userDisputes.evict(vendorId);
@@ -536,6 +535,7 @@ public class UserServiceJPA implements UserService {
                                     .reason(entity.getReason())
                                     .timeCreated(entity.getTimeCreated())
                                     .description(entity.getDescription())
+                                    .vendorResponse(entity.getVendorResponse())
                                     .build();
 
                         }

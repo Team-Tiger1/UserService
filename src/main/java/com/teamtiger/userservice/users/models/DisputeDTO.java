@@ -35,6 +35,8 @@ public class DisputeDTO {
 
     private String description;
 
+    private String vendorResponse;
+
     private LocalDateTime timeCreated;
 
 
