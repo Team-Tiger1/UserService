@@ -104,6 +104,7 @@ public class ReservationCollectedListener {
                     //Run SQL query and calculate new badge grade
                     Number output = sqlMethod.apply(userId);
                     BadgeGrade grade = calculateBadgeGrade.apply(badge.getName(), output);
+                    badge.setCurrentAmount(output.doubleValue());
                     badge.setGrade(grade);
                 }
             }
