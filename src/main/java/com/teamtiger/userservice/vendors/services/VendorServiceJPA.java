@@ -38,6 +38,7 @@ public class VendorServiceJPA implements VendorService{
      * @param createVendorDTO A valid request body with the information for the vendor account
      * @return A VendorRegisterDTO that has the vendor information and refresh token
      */
+    @Transactional
     @Override
     public VendorRegisterDTO createVendor(CreateVendorDTO createVendorDTO) {
 
@@ -112,6 +113,7 @@ public class VendorServiceJPA implements VendorService{
      * @param updateVendorDTO Has the details that are being updated
      * @return The new vendor details after they've been updated
      */
+    @Transactional
     @Override
     public VendorDTO updateVendorDetails(UpdateVendorDTO updateVendorDTO, String accessToken) {
 
@@ -164,6 +166,7 @@ public class VendorServiceJPA implements VendorService{
      * @param accessToken An access token (has vendorId in the payload)
      * @param passwordDTO The new password and old password
      */
+    @Transactional
     @Override
     public void updatePassword(UpdateVendorPasswordDTO passwordDTO, String accessToken) {
 
@@ -221,6 +224,7 @@ public class VendorServiceJPA implements VendorService{
      * @param accessToken An access token (has vendorId in the payload)
      * @param vendors List of generated vendors
      */
+    @Transactional
     @Override
     public void loadSeededData(String accessToken, List<VendorSeedDTO> vendors) {
 
@@ -327,6 +331,7 @@ public class VendorServiceJPA implements VendorService{
      * @param updateDisputeDTO The new information for the dispute
      * @return The updated dispute
      */
+    @Transactional
     @CacheEvict(value = "user_disputes", key = "@jwtTokenUtil.getUuidFromToken(#accessToken)")
     @Override
     public DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO) {
