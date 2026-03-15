@@ -27,4 +27,6 @@ public interface VendorService {
 
     DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO);
 
+    void deleteVendor(String accessToken);
+
 }

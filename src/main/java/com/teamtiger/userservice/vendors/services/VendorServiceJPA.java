@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -363,6 +364,31 @@ public class VendorServiceJPA implements VendorService{
                 .vendorResponse(savedDispute.getVendorResponse())
                 .createdAt(savedDispute.getTimeCreated())
                 .build();
+    }
+
+
+    /**
+     * Deletes vendor records and vendor product records
+     * @param accessToken Vendors access token
+     */
+    @Override
+    @Transactional
+    public void deleteVendor(String accessToken) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract id
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //Delete vendor and vendor products
+        vendorRepository.deleteAllVendorProducts(vendorId);
+
+        vendorRepository.deleteById(vendorId);
     }
 
     /**
