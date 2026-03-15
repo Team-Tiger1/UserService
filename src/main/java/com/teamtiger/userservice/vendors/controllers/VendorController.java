@@ -330,6 +330,42 @@ public class VendorController {
 
     }
 
+    /**
+     * Processes a vendors request to delete their account
+     * @param authHeader Authorization Header
+     * @return 204 No Content, or 401 if the role is not VENDOR
+     */
+    @DeleteMapping
+    public ResponseEntity<?> deleteVendor(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            vendorService.deleteVendor(accessToken);
+
+            //Set refresh cookie to expire immediately
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", null)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+
+            return ResponseEntity.noContent()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .build();
+
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
 
 
 }

@@ -49,6 +49,7 @@ public class UserServiceJPA implements UserService {
      * @param userDTO A valid request body with the information for the user account
      * @return A UserRegisterDTO that has the user information and refresh token
      */
+    @Transactional
     @Override
     public UserRegisterDTO createUser(CreateUserDTO userDTO) {
 
@@ -155,6 +156,7 @@ public class UserServiceJPA implements UserService {
      * @param updateUserDTO Has the details that are being updated
      * @return The new user details after they've been updated
      */
+    @Transactional
     @Override
     public UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
 
@@ -192,6 +194,7 @@ public class UserServiceJPA implements UserService {
      * @param accessToken An access token (has userId in the payload)
      * @param passwordDTO The new password and old password
      */
+    @Transactional
     @Override
     public void updateUserPassword(String accessToken, UpdateUserPasswordDTO passwordDTO) {
 
@@ -224,6 +227,7 @@ public class UserServiceJPA implements UserService {
      * @param accessToken An access token (has userId in the payload)
      * @return The streak wrapped in a DTO
      */
+    @Transactional
     @Override
     public StreakDTO getUserStreak(String accessToken) {
 
@@ -421,6 +425,7 @@ public class UserServiceJPA implements UserService {
      * @param createDisputeDTO Dispute information
      * @return Saved dispute
      */
+    @Transactional
     @Override
     public DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO) {
         //Get User reference

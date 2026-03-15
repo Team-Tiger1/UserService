@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -53,6 +54,7 @@ public class ReservationCollectedListener {
      * @param event The message from the queue
      */
     @RabbitListener(queues = UserRabbitMQConfig.QUEUE)
+    @Transactional
     public void handle(@NonNull ReservationCollectedEvent event) {
 
         //Extract data from message
