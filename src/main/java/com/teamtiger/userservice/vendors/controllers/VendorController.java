@@ -335,6 +335,7 @@ public class VendorController {
      * @param authHeader Authorization Header
      * @return 204 No Content, or 401 if the role is not VENDOR
      */
+    @Operation(summary = "Allows a vendor to delete their account")
     @DeleteMapping
     public ResponseEntity<?> deleteVendor(@RequestHeader("Authorization") String authHeader) {
         try {
