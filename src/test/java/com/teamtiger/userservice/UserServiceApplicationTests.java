@@ -3,6 +3,7 @@ package com.teamtiger.userservice;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @ActiveProfiles("test")
 @Suite
+@EnableCaching
 @SelectPackages("com.teamtiger.userservice")
 class UserServiceApplicationTests {
 

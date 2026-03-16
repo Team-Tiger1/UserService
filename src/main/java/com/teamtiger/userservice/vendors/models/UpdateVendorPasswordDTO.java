@@ -3,12 +3,14 @@ package com.teamtiger.userservice.vendors.models;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * A DTO for a vendor to update their password
  */
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UpdateVendorPasswordDTO {
 
     @NotBlank

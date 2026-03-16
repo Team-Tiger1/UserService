@@ -1,9 +1,12 @@
 package com.teamtiger.userservice.users.entities;
 
+import com.teamtiger.userservice.users.entities.disputes.Dispute;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -40,6 +43,10 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Dispute> disputes = new HashSet<>();
 
     @Version
     private Long version;

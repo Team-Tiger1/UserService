@@ -9,11 +9,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.UUID;
 
+import com.teamtiger.userservice.TestCacheConfig;
 import com.teamtiger.userservice.users.services.UserService;
 import lombok.extern.apachecommons.CommonsLog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,6 +38,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
  */
 @CommonsLog
 @WebMvcTest(UserController.class)
+@Import(TestCacheConfig.class)
 public class UserControllerTest {
 
     @Autowired

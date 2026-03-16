@@ -20,4 +20,16 @@ public interface UserService {
 
     void loadSeededUsers(String accessToken, List<UserSeedDTO> users);
 
+    List<UserBadgeDTO> getAllBadgesForUser(String accessToken);
+
+    void deleteUser(String accessToken);
+
+    LeaderboardDTO getLeaderboard(String accessToken, LeaderboardOption option);
+  
+    DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO);
+
+    List<DisputeDTO> getDisputes(String accessToken);
+
+    UserImpactDTO getUserImpact(String accessToken, String period);
+
 }

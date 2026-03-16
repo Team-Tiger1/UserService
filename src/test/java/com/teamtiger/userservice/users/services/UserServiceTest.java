@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.teamtiger.userservice.users.repositories.BadgeRepository;
+import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,8 @@ import com.teamtiger.userservice.users.models.CreateUserDTO;
 import com.teamtiger.userservice.users.models.LoginDTO;
 import com.teamtiger.userservice.users.models.UserDTO;
 import com.teamtiger.userservice.users.models.UserRegisterDTO;
+import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 /**
  * Unit Tests for User Services
@@ -44,6 +48,12 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private StreakRepository streakRepository;
+
+    @Mock
+    private BadgeRepository badgeRepository;
 
     @Mock
     private JwtTokenUtil jwtTokenUtil;

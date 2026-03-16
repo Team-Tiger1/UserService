@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.micrometer.observation.autoconfigure.ObservationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -158,6 +160,10 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        catch (EmailAlreadyTakenException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
         catch (AuthorizationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -240,6 +246,198 @@ public class UserController {
             String token = authToken.replace("Bearer ", "");
             userService.loadSeededUsers(token, users);
             return ResponseEntity.noContent().build();
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Processes a users request to get all their badges
+     * @param authHeader Authorization Header
+     * @return 200 with a list of badges,
+     * 404 if the user is not found
+     * 401 if the role is not USER
+     * 500 if other error occurs
+     */
+    @Operation(summary = "Get all badges for a user")
+    @GetMapping("/badges")
+    public ResponseEntity<?> getBadgesForUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<UserBadgeDTO> userBadges = userService.getAllBadgesForUser(accessToken);
+            return ResponseEntity.ok(userBadges);
+        }
+
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Processes a users request to delete their account
+     * @param authHeader Authorization Header
+     * @return 204 if Account deleted and 401 if account role is not USER
+     */
+    @Operation(summary = "Allows a user to delete their account and associated information")
+    @DeleteMapping
+    public ResponseEntity<?> deleteUserAccount(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            userService.deleteUser(accessToken);
+
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", null)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+
+            return ResponseEntity.noContent()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .build();
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Processes a users request to logout
+     * @return Sets the users refresh token cookie to be expired
+     */
+    @Operation(summary = "Allows a user to logout, invalidating the refresh token")
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .build();
+    }
+
+    /**
+     * Processes a users request to get the top 10 users and themselves
+     * @param authHeader Authorization Header
+     * @param option MONEY or WASTE
+     * @return A list of the top 10 users and your current position
+     */
+    @Operation(summary = "Allows a user to get the leaderboard for MONEY (saved) or WASTE (saved)")
+    @GetMapping("/leaderboard")
+    public ResponseEntity<?> getLeaderboard(@RequestHeader("Authorization") String authHeader,
+                                            @RequestParam(name = "metric") LeaderboardOption option) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            LeaderboardDTO leaderboardDTO = userService.getLeaderboard(accessToken, option);
+            return ResponseEntity.ok(leaderboardDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+          
+    /**
+     * Processes a users request to create a dispute
+     * @param authHeader The authorization header
+     * @param createDisputeDTO The reasons for the dispute
+     * @return The saved dispute with vendor and bundle information
+     */
+    @Operation(summary = "Allows a User to Create a Dispute for a Bundle")
+    @PostMapping("/dispute")
+    public ResponseEntity<?> createDispute(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody CreateDisputeDTO createDisputeDTO) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            DisputeDTO disputeDTO = userService.createDispute(accessToken, createDisputeDTO);
+            return ResponseEntity.ok(disputeDTO);
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Processes a users request to get all their disputes
+     * @param authHeader The authorization header
+     * @return A list of dispute's
+     */
+    @Operation(summary = "Allows a user to get all their disputes")
+    @GetMapping("/dispute")
+    public ResponseEntity<?> getDisputes(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            List<DisputeDTO> disputeDTOS = userService.getDisputes(accessToken);
+            return ResponseEntity.ok(disputeDTOS);
+        }
+
+        catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+
+        }
+
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
+    /**
+     *Processes a users request to get thier impact statistics
+     * @param authHeader The authorization header
+     * @param period The time period to calculate impact for (week, month, year, all)
+     * @return ResponseEntity with users impact metrics
+     */
+    @Operation(summary = "Allows a user to get their impact metrics")
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getUserImpact(@RequestHeader("Authorization") String authHeader,
+                                           @RequestParam(name = "period", defaultValue = "week", required = false) String period) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            UserImpactDTO userImpactDTO = userService.getUserImpact(accessToken, period);
+            return ResponseEntity.ok(userImpactDTO);
         }
 
         catch (AuthorizationException e) {

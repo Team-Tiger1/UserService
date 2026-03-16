@@ -3,20 +3,33 @@ package com.teamtiger.userservice.users.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
-import com.teamtiger.userservice.users.entities.Streak;
-import com.teamtiger.userservice.users.entities.User;
+import com.teamtiger.userservice.users.entities.*;
+import com.teamtiger.userservice.users.entities.badges.Badge;
+import com.teamtiger.userservice.users.entities.badges.BadgeGrade;
+import com.teamtiger.userservice.users.entities.badges.BadgeName;
+import com.teamtiger.userservice.users.entities.badges.BadgeValues;
+import com.teamtiger.userservice.users.entities.disputes.Dispute;
+import com.teamtiger.userservice.users.entities.disputes.DisputeStatus;
 import com.teamtiger.userservice.users.exceptions.*;
 import com.teamtiger.userservice.users.models.*;
+import com.teamtiger.userservice.users.repositories.BadgeRepository;
+import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.users.repositories.StreakRepository;
 import com.teamtiger.userservice.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiFunction;
 
 @Service
 @RequiredArgsConstructor
@@ -27,12 +40,16 @@ public class UserServiceJPA implements UserService {
     private final PasswordHasher passwordHasher;
     private final UsernameGenerator usernameGenerator;
     private final StreakRepository streakRepository;
+    private final BadgeRepository badgeRepository;
+    private final DisputeRepository disputeRepository;
+    private final CacheManager cacheManager;
 
     /**
      * Creates a new user and stores the record on the database
      * @param userDTO A valid request body with the information for the user account
      * @return A UserRegisterDTO that has the user information and refresh token
      */
+    @Transactional
     @Override
     public UserRegisterDTO createUser(CreateUserDTO userDTO) {
 
@@ -62,6 +79,9 @@ public class UserServiceJPA implements UserService {
             user = userRepository.save(user);
         }
 
+        //Save badges
+        badgeRepository.saveAll(createAllUnrankedBadges(user.getId()));
+
         //Get Refresh Token
         String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), Role.USER);
 
@@ -69,6 +89,21 @@ public class UserServiceJPA implements UserService {
                 .userDTO(UserMapper.toDTO(user))
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    private Set<Badge> createAllUnrankedBadges(UUID userId) {
+        Set<Badge> newBadges = new HashSet<>();
+        for (BadgeName badgeName : BadgeValues.BADGE_THRESHOLDS.keySet()) {
+
+            newBadges.add(Badge.builder()
+                    .name(badgeName)
+                    .grade(BadgeGrade.UNRANKED)
+                    .currentAmount(0)
+                    .userId(userId)
+                    .build());
+
+        }
+        return newBadges;
     }
 
     /**
@@ -121,6 +156,7 @@ public class UserServiceJPA implements UserService {
      * @param updateUserDTO Has the details that are being updated
      * @return The new user details after they've been updated
      */
+    @Transactional
     @Override
     public UserDTO updateUserProfile(String accessToken, UpdateUserDTO updateUserDTO) {
 
@@ -144,9 +180,11 @@ public class UserServiceJPA implements UserService {
 
         //Update email
         String email = updateUserDTO.getEmail();
-        if (!userRepository.existsByEmail(email)) {
-            user.setEmail(email);
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyTakenException();
         }
+
+        user.setEmail(email);
 
         User savedUser = userRepository.save(user);
 
@@ -158,6 +196,7 @@ public class UserServiceJPA implements UserService {
      * @param accessToken An access token (has userId in the payload)
      * @param passwordDTO The new password and old password
      */
+    @Transactional
     @Override
     public void updateUserPassword(String accessToken, UpdateUserPasswordDTO passwordDTO) {
 
@@ -190,6 +229,7 @@ public class UserServiceJPA implements UserService {
      * @param accessToken An access token (has userId in the payload)
      * @return The streak wrapped in a DTO
      */
+    @Transactional
     @Override
     public StreakDTO getUserStreak(String accessToken) {
 
@@ -240,7 +280,6 @@ public class UserServiceJPA implements UserService {
 
         //Convert DTOs to Entities
         List<User> entityList = users.stream()
-                .peek(dto -> System.out.println(dto.getUserId()))
                 .map(dto -> User.builder()
                         .id(dto.getUserId())
                         .username(usernameGenerator.generateUsername())
@@ -266,6 +305,303 @@ public class UserServiceJPA implements UserService {
 
         streakRepository.saveAll(streakList);
     }
+
+    @Override
+    public List<UserBadgeDTO> getAllBadgesForUser(String accessToken) {
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Set<Badge> badges = badgeRepository.findAllByUserId(id);
+
+        BiFunction<BadgeName, BadgeGrade, Number> findNextThreshold = (badgeName, badgeGrade) -> {
+                Double[] thresholds = BadgeValues.BADGE_THRESHOLDS.get(badgeName);
+                if(badgeGrade == BadgeGrade.UNRANKED) {
+                    return thresholds[0];
+                }
+
+                if(badgeGrade == BadgeGrade.BRONZE) {
+                    return thresholds[1];
+                }
+
+                if(badgeGrade == BadgeGrade.SILVER) {
+                    return thresholds[2];
+                }
+
+                return null;
+        };
+
+        return badges.stream()
+                .map(entity -> {
+                    Number threshold = findNextThreshold.apply(entity.getName(), entity.getGrade());
+
+                    double safeThreshold = (threshold != null) ? threshold.doubleValue() : 0.0;
+
+                    return UserBadgeDTO.builder()
+                            .name(entity.getName())
+                            .grade(entity.getGrade())
+                            .currentAmount(entity.getCurrentAmount())
+                            .threshold(safeThreshold)
+                            .build();
+                })
+                .toList();
+    }
+
+    /**
+     * Deletes user associated information
+     * @param accessToken JWT Token
+     */
+    @Override
+    @Transactional
+    public void deleteUser(String accessToken) {
+
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        streakRepository.deleteById(id);
+
+        badgeRepository.deleteAllByUserId(id);
+
+        userRepository.deleteById(id);
+
+    }
+
+    /**
+     * Gets the leaderboard data for the user
+     * @param accessToken The users access token
+     * @param option MONEY or WASTE for different metrics
+     * @return Top 10 users and your user's rank
+     */
+    @Override
+    public LeaderboardDTO getLeaderboard(String accessToken, LeaderboardOption option) {  
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        UUID id = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //Get Top 10 Users
+        List<LeaderboardDTO.LeaderboardEntry> entries = getTopTenLeaderBoard(option);
+
+        List<Object[]> currentUser;
+
+        //Get associated data from database
+        if(option == LeaderboardOption.WASTE) {
+            currentUser = userRepository.findUserRankByWasteSaved(id);
+        } else {
+            currentUser = userRepository.findUserRankByMoneySaved(id);
+        }
+
+        String username = (String) currentUser.get(0)[0];
+        int rank = ((Number) currentUser.get(0)[1]).intValue();
+        double value = ((Number) currentUser.get(0)[2]).doubleValue();
+
+        //Check if value is negative
+        if(value < 0) {
+            value = 0;
+        }
+
+        return LeaderboardDTO.builder()
+                .top(entries)
+                .position(rank)
+                .username(username)
+                .value(value)
+                .build();
+      }
+
+    /**
+     * Validates dispute information, saves it and returns related dispute
+     * @param accessToken User access token
+     * @param createDisputeDTO Dispute information
+     * @return Saved dispute
+     */
+    @Transactional
+    @Override
+    public DisputeDTO createDispute(String accessToken, CreateDisputeDTO createDisputeDTO) {
+        //Get User reference
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        //Check if bundle exists
+        boolean doesBundleExist = disputeRepository.doesBundleExist(createDisputeDTO.getBundleId());
+        if(!doesBundleExist) {
+            throw new RuntimeException();
+        }
+
+        //Find vendor and bundle names
+        Map<String, Object> vendorDetails = disputeRepository.findVendorDetailsFromBundle(createDisputeDTO.getBundleId());
+
+        String vendorName = (String) vendorDetails.get("name");
+        UUID vendorId = (UUID) vendorDetails.get("vendor_id");
+
+        //Evict from cache
+        Cache userDisputes = cacheManager.getCache("user_disputes");
+        if(userDisputes != null) {
+            userDisputes.evict(vendorId);
+        }
+
+        String bundleName = disputeRepository.findBundleName(createDisputeDTO.getBundleId());
+
+
+        //Creates and saves bundle
+        Dispute dispute = Dispute.builder()
+                .bundleId(createDisputeDTO.getBundleId())
+                .vendorId(vendorId)
+                .status(DisputeStatus.SUBMITTED)
+                .reason(createDisputeDTO.getReason())
+                .description(createDisputeDTO.getDescription())
+                .user(user)
+                .timeCreated(LocalDateTime.now())
+                .build();
+
+        Dispute savedDispute = disputeRepository.save(dispute);
+
+
+
+        return DisputeDTO.builder()
+                .vendorName(vendorName)
+                .bundleName(bundleName)
+                .status(savedDispute.getStatus())
+                .description(savedDispute.getDescription())
+                .reason(savedDispute.getReason())
+                .timeCreated(savedDispute.getTimeCreated())
+                .build();
+    }
+      
+
+    /**
+     * Calculates the top 10 users for money or waste saved
+     * @param option Chooses between money and waste
+     * @return List of entries
+     */
+    @Cacheable(value = "leaderboard", key = "#option")
+    public List<LeaderboardDTO.LeaderboardEntry> getTopTenLeaderBoard(LeaderboardOption option) {
+        List<Object[]> topUsers;
+
+        //Get associated data from database
+        if(option == LeaderboardOption.WASTE) {
+            topUsers = userRepository.countTopWasteSaved();
+        } else {
+            topUsers = userRepository.countTopMoneySaved();
+        }
+
+        //Cast data to DTO
+        List<LeaderboardDTO.LeaderboardEntry> entries = new ArrayList<>();
+        for(Object[] topUser : topUsers) {
+            String username = (String) topUser[0];
+            double value = (double) topUser[1];
+            entries.add(new LeaderboardDTO.LeaderboardEntry(username, value));
+        }
+
+        return entries;
+    }
+
+    /**
+     * Gets all associated disputes for a user
+     * @param accessToken The users access token
+     * @return A list of DisputeDTO's
+     */
+    @Override
+    public List<DisputeDTO> getDisputes(String accessToken) {
+
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User reference
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        //Map Disputes to DTO
+        return user.getDisputes().stream()
+                .map(entity -> {
+
+                            Map<String, Object> vendorDetails = disputeRepository.findVendorDetailsFromBundle(entity.getBundleId());
+                            String vendorName = (String) vendorDetails.get("name");
+
+                            return DisputeDTO.builder()
+                                    .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
+                                    .vendorName(vendorName)
+                                    .status(entity.getStatus())
+                                    .reason(entity.getReason())
+                                    .timeCreated(entity.getTimeCreated())
+                                    .description(entity.getDescription())
+                                    .vendorResponse(entity.getVendorResponse())
+                                    .build();
+
+                        }
+                ).toList();
+    }
+
+
+    /**
+     *Gets statistics for user's impact from use of platform for given period of time
+     * @param accessToken The users access token
+     * @param period to see impact starting from various times(week,month, year, all time)
+     * @return a UserImpactDTO containing money saved, waste saved and total orders
+     */
+    @Override
+    public UserImpactDTO getUserImpact(String accessToken, String period) {
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User ID
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //If user wants to view their all-time impact statistics
+        if(period.equals("all")) {
+            Double moneySaved = badgeRepository.countMoneySaved(userId);
+            Double wasteSaved = badgeRepository.countWasteSaved(userId);
+            Integer totalOrders = badgeRepository.countTotalBundlesForUser(userId);
+
+            //Return DTO
+            return UserImpactDTO.builder()
+                    .moneySaved(moneySaved != null ? moneySaved : 0.0)
+                    .wasteSaved(wasteSaved != null ? wasteSaved.intValue() : 0)
+                    .totalOrders(totalOrders != null ? totalOrders : 0)
+                    .build();
+        }
+
+        //Uses period passed in and current time to calculate the start of the requested period
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startPeriod = switch (period) {
+            case "week" -> now.minusWeeks(1);
+            case "month" -> now.minusMonths(1);
+            case "year" -> now.minusYears(1);
+            default -> now.minusWeeks(1);
+        };
+
+        Double moneySaved = badgeRepository.countMoneySavedForTimePeriod(userId, startPeriod);
+        Double wasteSaved = badgeRepository.countWasteSavedForTimePeriod(userId, startPeriod);
+        Long totalOrders = badgeRepository.countTotalOrdersForPeriod(userId, startPeriod);
+
+        //Return DTO
+        return UserImpactDTO.builder()
+                .moneySaved(moneySaved != null ? moneySaved : 0.0)
+                .wasteSaved(wasteSaved != null ? wasteSaved.intValue() : 0)
+                .totalOrders(totalOrders != null ? totalOrders.intValue() : 0)
+                .build();
+    }
+
 
     /**
      * Maps database entities to DTOs

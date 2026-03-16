@@ -39,7 +39,6 @@ public class AuthServiceJPA implements AuthService{
         //Check username existence against DB
         if(role.equals("USER")) {
             boolean doesUserExists = userRepository.existsById(uuid);
-            System.out.println(uuid + " " + doesUserExists);
             if(!doesUserExists) {
                 throw new UserNotFoundException();
             }

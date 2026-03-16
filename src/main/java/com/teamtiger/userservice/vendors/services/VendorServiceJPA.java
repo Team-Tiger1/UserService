@@ -3,17 +3,25 @@ package com.teamtiger.userservice.vendors.services;
 import com.teamtiger.userservice.auth.JwtTokenUtil;
 import com.teamtiger.userservice.auth.PasswordHasher;
 import com.teamtiger.userservice.auth.models.Role;
+import com.teamtiger.userservice.users.entities.disputes.Dispute;
+import com.teamtiger.userservice.users.entities.disputes.DisputeReason;
 import com.teamtiger.userservice.users.exceptions.AuthorizationException;
 import com.teamtiger.userservice.users.exceptions.PasswordIncorrectException;
+import com.teamtiger.userservice.users.repositories.DisputeRepository;
 import com.teamtiger.userservice.vendors.entities.Vendor;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNameTakenException;
 import com.teamtiger.userservice.vendors.exceptions.CompanyNotFoundException;
+import com.teamtiger.userservice.vendors.exceptions.DisputeNotFoundException;
 import com.teamtiger.userservice.vendors.models.*;
 import com.teamtiger.userservice.vendors.repositories.VendorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -21,6 +29,7 @@ import java.util.UUID;
 public class VendorServiceJPA implements VendorService{
 
     private final VendorRepository vendorRepository;
+    private final DisputeRepository disputeRepository;
     private final PasswordHasher passwordHasher;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -29,6 +38,7 @@ public class VendorServiceJPA implements VendorService{
      * @param createVendorDTO A valid request body with the information for the vendor account
      * @return A VendorRegisterDTO that has the vendor information and refresh token
      */
+    @Transactional
     @Override
     public VendorRegisterDTO createVendor(CreateVendorDTO createVendorDTO) {
 
@@ -103,6 +113,7 @@ public class VendorServiceJPA implements VendorService{
      * @param updateVendorDTO Has the details that are being updated
      * @return The new vendor details after they've been updated
      */
+    @Transactional
     @Override
     public VendorDTO updateVendorDetails(UpdateVendorDTO updateVendorDTO, String accessToken) {
 
@@ -155,6 +166,7 @@ public class VendorServiceJPA implements VendorService{
      * @param accessToken An access token (has vendorId in the payload)
      * @param passwordDTO The new password and old password
      */
+    @Transactional
     @Override
     public void updatePassword(UpdateVendorPasswordDTO passwordDTO, String accessToken) {
 
@@ -212,6 +224,7 @@ public class VendorServiceJPA implements VendorService{
      * @param accessToken An access token (has vendorId in the payload)
      * @param vendors List of generated vendors
      */
+    @Transactional
     @Override
     public void loadSeededData(String accessToken, List<VendorSeedDTO> vendors) {
 
@@ -246,6 +259,7 @@ public class VendorServiceJPA implements VendorService{
      * Gets all vendors from the database
      * @return A list of vendors
      */
+    @Cacheable(value = "vendors")
     @Override
     public List<BasicVendorDTO> getAllVendors() {
 
@@ -267,12 +281,119 @@ public class VendorServiceJPA implements VendorService{
      * @param vendorId The vendors UUID
      */
     @Override
+    @Cacheable(value = "vendor_info", key = "#vendorId")
     public VendorDTO getDetailedVendorInfo(UUID vendorId) {
 
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(CompanyNotFoundException::new);
 
         return VendorMapper.toDTO(vendor);
+    }
+
+    /**
+     * Gets all disputes related with a vendor
+     * @param accessToken The vendors access token
+     * @return A list of disputes
+     */
+    @Cacheable(value = "user_disputes", key = "@jwtTokenUtil.getUuidFromToken(#accessToken)")
+    @Override
+    public List<DisputeDTO> getAllDisputes(String accessToken) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract vendorId and query database
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Set<Dispute> savedDisputes = disputeRepository.findAllDisputesByVendor(vendorId);
+
+        return savedDisputes.stream()
+                .map(entity -> DisputeDTO.builder()
+                        .disputeId(entity.getId())
+                        .bundleName(disputeRepository.findBundleName(entity.getBundleId()))
+                        .reason(entity.getReason())
+                        .description(entity.getDescription())
+                        .vendorResponse(entity.getVendorResponse())
+                        .status(entity.getStatus())
+                        .createdAt(entity.getTimeCreated())
+                        .build()
+                ).toList();
+    }
+
+
+    /**
+     * Validates the vendor, updates the dispute and saves it
+     * @param accessToken The vendors access token
+     * @param updateDisputeDTO The new information for the dispute
+     * @return The updated dispute
+     */
+    @Transactional
+    @CacheEvict(value = "user_disputes", key = "@jwtTokenUtil.getUuidFromToken(#accessToken)")
+    @Override
+    public DisputeDTO updateDispute(String accessToken, UpdateDisputeDTO updateDisputeDTO) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract dispute information and query database
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        Dispute savedDispute = disputeRepository.findById(updateDisputeDTO.getDisputeId())
+                .orElseThrow(DisputeNotFoundException::new);
+
+        //Check the target vendor is updating the dispute
+        if(!savedDispute.getVendorId().equals(vendorId)) {
+            throw new AuthorizationException();
+        }
+
+        //Update and save
+        savedDispute.setStatus(updateDisputeDTO.getFinalStatus());
+        savedDispute.setVendorResponse(updateDisputeDTO.getVendorResponse());
+
+        disputeRepository.save(savedDispute);
+
+        return DisputeDTO.builder()
+                .disputeId(savedDispute.getId())
+                .reason(savedDispute.getReason())
+                .status(savedDispute.getStatus())
+                .bundleName(disputeRepository.findBundleName(savedDispute.getBundleId()))
+                .description(savedDispute.getDescription())
+                .vendorResponse(savedDispute.getVendorResponse())
+                .createdAt(savedDispute.getTimeCreated())
+                .build();
+    }
+
+
+    /**
+     * Deletes vendor records and vendor product records
+     * @param accessToken Vendors access token
+     */
+    @Override
+    @Transactional
+    public void deleteVendor(String accessToken) {
+
+        //Check if role is valid
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+
+        if(!role.equals("VENDOR")) {
+            throw new AuthorizationException();
+        }
+
+        //Extract id
+        UUID vendorId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //Delete vendor and vendor products
+        vendorRepository.deleteAllVendorProducts(vendorId);
+
+        vendorRepository.deleteById(vendorId);
     }
 
     /**
