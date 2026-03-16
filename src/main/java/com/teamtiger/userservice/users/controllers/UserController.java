@@ -160,6 +160,10 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        catch (EmailAlreadyTakenException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
         catch (AuthorizationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
