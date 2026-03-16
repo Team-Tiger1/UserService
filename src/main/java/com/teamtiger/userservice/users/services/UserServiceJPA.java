@@ -547,6 +547,60 @@ public class UserServiceJPA implements UserService {
                 ).toList();
     }
 
+
+    /**
+     *Gets statistics for user's impact from use of platform for given period of time
+     * @param accessToken The users access token
+     * @param period to see impact starting from various times(week,month, year, all time)
+     * @return a UserImpactDTO containing money saved, waste saved and total orders
+     */
+    @Override
+    public UserImpactDTO getUserImpact(String accessToken, String period) {
+        //Validate role
+        String role = jwtTokenUtil.getRoleFromToken(accessToken);
+        if(!role.equals("USER")) {
+            throw new AuthorizationException();
+        }
+
+        //Get User ID
+        UUID userId = jwtTokenUtil.getUuidFromToken(accessToken);
+
+        //If user wants to view their all-time impact statistics
+        if(period.equals("all")) {
+            Double moneySaved = badgeRepository.countMoneySaved(userId);
+            Double wasteSaved = badgeRepository.countWasteSaved(userId);
+            Integer totalOrders = badgeRepository.countTotalBundlesForUser(userId);
+
+            //Return DTO
+            return UserImpactDTO.builder()
+                    .moneySaved(moneySaved != null ? moneySaved : 0.0)
+                    .wasteSaved(wasteSaved != null ? wasteSaved.intValue() : 0)
+                    .totalOrders(totalOrders != null ? totalOrders : 0)
+                    .build();
+        }
+
+        //Uses period passed in and current time to calculate the start of the requested period
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startPeriod = switch (period) {
+            case "week" -> now.minusWeeks(1);
+            case "month" -> now.minusMonths(1);
+            case "year" -> now.minusYears(1);
+            default -> now.minusWeeks(1);
+        };
+
+        Double moneySaved = badgeRepository.countMoneySavedForTimePeriod(userId, startPeriod);
+        Double wasteSaved = badgeRepository.countWasteSavedForTimePeriod(userId, startPeriod);
+        Long totalOrders = badgeRepository.countTotalOrdersForPeriod(userId, startPeriod);
+
+        //Return DTO
+        return UserImpactDTO.builder()
+                .moneySaved(moneySaved != null ? moneySaved : 0.0)
+                .wasteSaved(wasteSaved != null ? wasteSaved.intValue() : 0)
+                .totalOrders(totalOrders != null ? totalOrders.intValue() : 0)
+                .build();
+    }
+
+
     /**
      * Maps database entities to DTOs
      */

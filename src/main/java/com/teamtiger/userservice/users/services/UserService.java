@@ -30,4 +30,6 @@ public interface UserService {
 
     List<DisputeDTO> getDisputes(String accessToken);
 
+    UserImpactDTO getUserImpact(String accessToken, String period);
+
 }

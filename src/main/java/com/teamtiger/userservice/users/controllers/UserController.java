@@ -420,6 +420,29 @@ public class UserController {
     }
 
 
+    /**
+     *Processes a users request to get thier impact statistics
+     * @param authHeader The authorization header
+     * @param period The time period to calculate impact for (week, month, year, all)
+     * @return ResponseEntity with users impact metrics
+     */
+    @Operation(summary = "Allows a user to get their impact metrics")
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getUserImpact(@RequestHeader("Authorization") String authHeader,
+                                           @RequestParam(name = "period", defaultValue = "week", required = false) String period) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+            UserImpactDTO userImpactDTO = userService.getUserImpact(accessToken, period);
+            return ResponseEntity.ok(userImpactDTO);
+        }
 
+        catch (AuthorizationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 
 }
