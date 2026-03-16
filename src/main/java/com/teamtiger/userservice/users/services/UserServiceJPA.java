@@ -180,9 +180,11 @@ public class UserServiceJPA implements UserService {
 
         //Update email
         String email = updateUserDTO.getEmail();
-        if (!userRepository.existsByEmail(email)) {
-            user.setEmail(email);
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyTakenException();
         }
+
+        user.setEmail(email);
 
         User savedUser = userRepository.save(user);
 
