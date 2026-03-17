@@ -158,7 +158,7 @@ public class VendorController {
     @Operation(summary = "Allows a Vendor to update their password")
     @PatchMapping("/password")
     public ResponseEntity<?> updateVendorPassword(@RequestHeader("Authorization") String authHeader,
-                                                  UpdateVendorPasswordDTO passwordDTO) {
+                                                  @Valid @RequestBody UpdateVendorPasswordDTO passwordDTO) {
         try {
             String accessToken = authHeader.replace("Bearer ", "");
             vendorService.updatePassword(passwordDTO, accessToken);
