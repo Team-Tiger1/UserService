@@ -332,7 +332,7 @@ public class UserServiceJPA implements UserService {
                     return thresholds[2];
                 }
 
-                return null;
+                return thresholds[2];
         };
 
         return badges.stream()
