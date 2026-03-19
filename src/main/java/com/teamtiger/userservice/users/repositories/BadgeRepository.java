@@ -46,14 +46,14 @@ public interface BadgeRepository extends JpaRepository<Badge, Long> {
     nativeQuery = true)
     Integer countDistinctUserCategories(UUID userId);
 
-    @Query(value = "SELECT SUM(GREATEST(b.retail_price - b.price,0) FROM bundles b " +
+    @Query(value = "SELECT SUM(GREATEST(b.retail_price - b.price,0)) FROM bundles b " +
             "JOIN reservation r ON r.bundle_id = b.bundle_id " +
             "WHERE r.user_id = :userId AND r.status = 'COLLECTED'",
     nativeQuery = true)
     Double countMoneySaved(UUID userId);
 
 
-    @Query(value = "SELECT SUM(GREATEST(b.retail_price - b.price,0) FROM bundles b " +
+    @Query(value = "SELECT SUM(GREATEST(b.retail_price - b.price,0)) FROM bundles b " +
             "JOIN reservation r ON r.bundle_id = b.bundle_id " +
             "WHERE r.user_id = :userId AND r.status = 'COLLECTED' " +
             "AND r.time_collected >= :startPeriod",
