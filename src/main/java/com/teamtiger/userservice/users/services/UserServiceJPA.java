@@ -395,6 +395,22 @@ public class UserServiceJPA implements UserService {
         //Get Top 10 Users
         List<LeaderboardDTO.LeaderboardEntry> entries = getTopTenLeaderBoard(option);
 
+        //Check if user has existing reservations
+        boolean userHasReservations = userRepository.doesUserHaveReservations(id);
+
+        if(!userHasReservations) {
+
+            User savedUser = userRepository.findById(id)
+                    .orElseThrow(UserNotFoundException::new);
+
+            return LeaderboardDTO.builder()
+                    .top(entries)
+                    .position(0)
+                    .username(savedUser.getUsername())
+                    .value(0)
+                    .build();
+        }
+
         List<Object[]> currentUser;
 
         //Get associated data from database
@@ -403,6 +419,7 @@ public class UserServiceJPA implements UserService {
         } else {
             currentUser = userRepository.findUserRankByMoneySaved(id);
         }
+
 
         String username = (String) currentUser.get(0)[0];
         int rank = ((Number) currentUser.get(0)[1]).intValue();

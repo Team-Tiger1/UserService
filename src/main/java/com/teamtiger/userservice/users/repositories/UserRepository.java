@@ -68,4 +68,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     List<Object[]> findUserRankByWasteSaved(UUID userId);
 
 
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM reservation WHERE user_id = :userId AND status = 'COLLECTED')", nativeQuery = true)
+    boolean doesUserHaveReservations(UUID userId);
+
 }
