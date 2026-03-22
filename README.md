@@ -151,9 +151,12 @@ The Image below highlights where in the architecture this service operates.
 
 - Setting up all CI/CD workflows to handle
   1. Automatic testing on push of main branch on the User Service repo
-  2. Automatic Deployment onto k3s with zero downtime on completion of automatic testing so broken code won't make it to deployment
+  2. Automatic Deployment onto k3s on completion of automatic testing so broken code won't make it to deployment
 - Set up the connection to the PostgreSQL database, and RabbitMQ
-
+- - **Added SpotBugs Dependancy to perform SAST**
+- - **Added Liveliness checks to workflow for zero downtime Deployment**
+- - **Fixed countMoneySaved and countMoneySavedForTimePeriod sql queries**
+- **Helped Review PR's**
 <br>
 
 **Author: Ivy Figari**
