@@ -121,15 +121,27 @@ The Image below highlights where in the architecture this service operates.
     - Defined Custom Exceptions to improve visibility in the logs
     - Setup a RabbitMQ Listener that receives updates to the streak
     - Created a Component that generates a unique username using random adjectives and nouns
+    - Setup Endpoints to modify account data and allow the user to delete their account
+    - Setup an endpoint so the user can logout
 - Setup Vendor Components:
     - Created Vendor Endpoints and specified the data required in the request
     - Validated incoming request data at the DTO layer
     - Defined the Vendor database table using Spring Boot JPA
     - Wrote business logic in the Vendor Service layer that accesses the database
+    - Setup Endpoints to modify account data and allow the vendor to delete their account
+    - Setup an endpoint so the vendor can logout
+- Setup Dispute Components:
+    - Created Endpoints for Users to submit a dispute against a vendor
+    - Created Endpoints for Vendors to Respond to disputes made against them
+- Setup User Impact Component:
+    - Setup Badge Endpoints and RabbitMQ listeners to update badges on reservation collection
+    - Setup Leaderboard endpoint so show top 10 users and users position
 - Added OpenAPI documentation to improve visibility of the backend for the front-end developers
 - Enforced Controller-Service-Repository model to improve consistency across services for developers
 - Setup Spring Boot Profiles to manage configurations for production, development and testing environments
 - Used Maven Licensing Plugin to check permissions of dependency licenses (Software Inventory)
+- Used Maven Dependency Security Plugin to Audit Dependencies for Security Vunerabilities
+- Setup Redis Cache Configuration and Cached Popular Endpoints
 - Created README file to show details about the repository
 - Added Comments and Javadocs to improve readability of code
 
