@@ -19,12 +19,22 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+
 @RestController
 @RequestMapping("/vendors")
 @RequiredArgsConstructor
+
+
 public class VendorController {
 
     private final VendorService vendorService;
+
+
 
     /**
      * Processes a Vendors's request to register
@@ -33,6 +43,26 @@ public class VendorController {
      * 409 if the company name is already taken
      * 500 if a different error occurs
      */
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vendor registered successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VendorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Company name is already taken",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @Operation(summary = "Allows a Vendor to create an account")
     @PostMapping("/register")
     public ResponseEntity<?> registerVendor(@Valid @RequestBody CreateVendorDTO createVendorDTO) {
