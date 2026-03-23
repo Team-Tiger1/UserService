@@ -268,6 +268,7 @@ public class VendorServiceJPA implements VendorService{
         //Only extract the basic data and convert to DTOs
         return vendorList.stream()
                 .map(entity -> BasicVendorDTO.builder()
+                        .postcode(entity.getPostcode())
                         .vendorId(entity.getId())
                         .vendorName(entity.getName())
                         .vendorDescription(entity.getDescription())

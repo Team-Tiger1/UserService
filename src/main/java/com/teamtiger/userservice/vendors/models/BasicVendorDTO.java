@@ -18,6 +18,7 @@ public class BasicVendorDTO {
 
     private UUID vendorId;
     private String vendorName;
+    private String postcode;
     private String vendorDescription;
 
 }
