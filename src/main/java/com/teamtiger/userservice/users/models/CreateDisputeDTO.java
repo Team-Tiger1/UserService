@@ -17,9 +17,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Request body for creating a dispute")
 public class CreateDisputeDTO {
 
     @NotNull
+    @Schema(description = "Bundle ID")
     private UUID bundleId;
 
     @NotNull
@@ -31,6 +33,7 @@ public class CreateDisputeDTO {
 
     @NotEmpty
     @Length(max = 200)
+    @Schema(description = "Dispute description")
     private String description;
 
 }
