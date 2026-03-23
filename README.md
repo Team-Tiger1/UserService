@@ -161,8 +161,9 @@ The Image below highlights where in the architecture this service operates.
 
 **Author: Ivy Figari**
 - Created unit tests: 
-  - UserController, 
-  - UserServices, 
-  - VendorServices
-- Created Integration tests
+  - UserController: Created MockMvc tests for endpoints including /users/register, /users/login, /users/me, and /users/password. Verified status codes, JSON responses, cookies, and exception handling.
+  - UserServices: Developed Mockito-based tests for UserServiceJPA, validating user registration, login, and profile retrieval. Covered key behaviours such as password hashing, token generation, and error handling (e.g. invalid credentials, duplicate emails).
+  - VendorServices: Contributed tests for vendor registration, including validation, password hashing, and input sanitisation.
+- 52% code coverage
+- 
 
