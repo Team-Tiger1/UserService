@@ -16,17 +16,23 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Schema(description = "Request body for updating a dispute")
 public class UpdateDisputeDTO {
 
     @NotNull
+    @Schema(description = "Dispute ID")
     private UUID disputeId;
 
     @NotNull
-    @Schema(implementation = DisputeStatus.class)
+    @Schema(
+            description = "Final status for the dispute",
+            implementation = DisputeStatus.class
+    )
     private DisputeStatus finalStatus;
 
     @NotEmpty
     @Length(max = 200)
+    @Schema(description = "Vendor response")
     private String vendorResponse;
 
 }

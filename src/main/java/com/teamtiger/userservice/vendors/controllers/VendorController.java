@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 
 @RestController
 @RequestMapping("/vendors")
@@ -104,6 +104,32 @@ public class VendorController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Allows a Vendor to login")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vendor logged in successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VendorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vendor not found in the database",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = " Password given was incorrect",
+                    content = @Content
+
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/login")
     public ResponseEntity<?> loginVendor(@Valid @RequestBody LoginVendorDTO loginVendorDTO) {
 
@@ -149,6 +175,31 @@ public class VendorController {
      * 500 if a different error occurred
      */
     @Operation(summary = "Allows a Vendor to update their account details")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vendor details updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VendorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vendor not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized access",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PatchMapping("/me")
     public ResponseEntity<?> updateVendorDetails(@RequestHeader("Authorization") String authHeader,
                                                  @Valid @RequestBody UpdateVendorDTO updateVendorDTO) {
@@ -180,12 +231,34 @@ public class VendorController {
      * Processes a Vendors's request to update their password
      * @param authHeader A bearer access token
      * @param passwordDTO A new valid password and their old password
-     * @return A ResponseEntity that returns 200 if the password was updated successfully
+     * @return A ResponseEntity that returns 204 if the password was updated successfully
      * 401 if the old password entered was incorrect, or a vendor tries to access the endpoint
      * 404 if the vendor was not found
      * 500 if a different error occurred
      */
     @Operation(summary = "Allows a Vendor to update their password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Password has been updated successfully",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vendor not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PatchMapping("/password")
     public ResponseEntity<?> updateVendorPassword(@RequestHeader("Authorization") String authHeader,
                                                   @Valid @RequestBody UpdateVendorPasswordDTO passwordDTO) {
@@ -218,6 +291,31 @@ public class VendorController {
      * 500 if a different error occurred
      */
     @Operation(summary = "Allows a vendor to fetch their own profile")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vendor profile retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VendorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vendor not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/me")
     public ResponseEntity<?> getOwnVendorProfile(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -248,6 +346,23 @@ public class VendorController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Allows bulk data transfer for seeded data")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Seeded 'fake' vendor data loaded successfully",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/internal")
     public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @RequestBody List<VendorSeedDTO> vendors) {
         try {
@@ -273,6 +388,21 @@ public class VendorController {
      * 500 if an error occurs
      */
     @Operation(summary = "Gets all vendors basic info")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vendors retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = BasicVendorDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping
     public ResponseEntity<?> getAllVendors() {
         try {
@@ -294,6 +424,26 @@ public class VendorController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Get Detailed Vendor Info")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vendor information retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VendorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vendor not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/{vendorId}")
     public ResponseEntity<?> getVendorInfo(@PathVariable UUID vendorId) {
         try {
@@ -315,8 +465,31 @@ public class VendorController {
      * Processes a vendors request to get all their disputes
      * @param authHeader The Authorization Header
      * @return A list of disputes
+     * 401 if the vendor is unauthorized
+     * if a different error occurs
+     *
      */
     @Operation(summary = "Allows a vendor to get all their disputes")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Disputes retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = DisputeDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/disputes")
     public ResponseEntity<?> getVendorDisputes(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -335,12 +508,34 @@ public class VendorController {
     }
 
     /**
-     * Proceses a vendors request to update a dispute
+     * Processes a vendors request to update a dispute
      * @param authHeader The authorization header
      * @param updateDisputeDTO The new status and response for the dispute
      * @return The Updated Dispute
+     * 401 if the vendor is unauthorized
+     * 500 if a different error occurs
      */
     @Operation(summary = "Allows a vendor to update a dispute against them")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Dispute updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DisputeDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/disputes")
     public ResponseEntity<?> updateDispute(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UpdateDisputeDTO updateDisputeDTO) {
 
@@ -364,8 +559,27 @@ public class VendorController {
      * Processes a vendors request to delete their account
      * @param authHeader Authorization Header
      * @return 204 No Content, or 401 if the role is not VENDOR
+     *  401 if the vendor is unauthorized
+     *  500 if a different error occurs
      */
     @Operation(summary = "Allows a vendor to delete their account")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Vendors account deleted successfully",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @DeleteMapping
     public ResponseEntity<?> deleteVendor(@RequestHeader("Authorization") String authHeader) {
         try {

@@ -16,6 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+
 import java.util.List;
 
 @RestController
@@ -33,6 +40,26 @@ public class UserController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Creates a new User")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User registered successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "This email already has an associated account",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
         try {
@@ -71,6 +98,31 @@ public class UserController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Allows a User to Login")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User logged in successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Incorrect password",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO) {
         try {
@@ -113,6 +165,31 @@ public class UserController {
      * 500 if a different error occurred
      */
     @Operation(summary = "Allows a User to get their own profile")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User profile retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized access",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/me")
     public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -141,10 +218,41 @@ public class UserController {
      * @param updateUserDTO A wrapper for the valid email address
      * @return A ResponseEntity that returns 200 if the email was updated successfully
      * 404 if the User was not found
+     * 409 if new email is already in use
      * 401 if a vendor tries to access the endpoint
      * 500 if a different error occurred
      */
     @Operation(summary = "Allows a user to update their email address")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User email updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "This email already has an associated account",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PatchMapping("/me")
     public ResponseEntity<?> updateUserProfile(@NotBlank @RequestHeader("Authorization") String authHeader,
                                                @Valid @RequestBody UpdateUserDTO updateUserDTO) {
@@ -183,6 +291,28 @@ public class UserController {
      * 500 if a different error occurred
      */
     @Operation(summary = "Allows a User to change their password")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Password updated successfully",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Incorrect password or unauthorized access",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PatchMapping("/password")
     public ResponseEntity<?> updateUserPassword(@RequestHeader("Authorization") String authHeader,
                                                 @Valid @RequestBody UpdateUserPasswordDTO passwordDTO) {
@@ -214,6 +344,26 @@ public class UserController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Get a streak for a user")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User streak retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = StreakDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/streak")
     public ResponseEntity<?> getUserStreak(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -240,6 +390,23 @@ public class UserController {
      * 500 if a different error occurs
      */
     @Operation(summary = "Allows for bulk data transfer for seeded data")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Seeded user data loaded successfully",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/internal")
     public ResponseEntity<?> loadSeededData(@RequestHeader("Authorization") String authToken, @Valid @RequestBody List<UserSeedDTO> users) {
         try {
@@ -266,6 +433,31 @@ public class UserController {
      * 500 if other error occurs
      */
     @Operation(summary = "Get all badges for a user")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User badges retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = UserBadgeDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/badges")
     public ResponseEntity<?> getBadgesForUser(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -293,6 +485,23 @@ public class UserController {
      * @return 204 if Account deleted and 401 if account role is not USER
      */
     @Operation(summary = "Allows a user to delete their account and associated information")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Successfully deleted user account",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @DeleteMapping
     public ResponseEntity<?> deleteUserAccount(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -326,6 +535,13 @@ public class UserController {
      * @return Sets the users refresh token cookie to be expired
      */
     @Operation(summary = "Allows a user to logout, invalidating the refresh token")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User logged out successfully",
+                    content = @Content
+            )
+    })
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", null)
@@ -348,6 +564,26 @@ public class UserController {
      * @return A list of the top 10 users and your current position
      */
     @Operation(summary = "Allows a user to get the leaderboard for MONEY (saved) or WASTE (saved)")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Leaderboard retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LeaderboardDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/leaderboard")
     public ResponseEntity<?> getLeaderboard(@RequestHeader("Authorization") String authHeader,
                                             @RequestParam(name = "metric") LeaderboardOption option) {
@@ -373,6 +609,31 @@ public class UserController {
      * @return The saved dispute with vendor and bundle information
      */
     @Operation(summary = "Allows a User to Create a Dispute for a Bundle")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Dispute created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DisputeDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @PostMapping("/dispute")
     public ResponseEntity<?> createDispute(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody CreateDisputeDTO createDisputeDTO) {
         try {
@@ -401,6 +662,31 @@ public class UserController {
      * @return A list of dispute's
      */
     @Operation(summary = "Allows a user to get all their disputes")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Disputes retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = DisputeDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/dispute")
     public ResponseEntity<?> getDisputes(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -431,6 +717,26 @@ public class UserController {
      * @return ResponseEntity with users impact metrics
      */
     @Operation(summary = "Allows a user to get their impact metrics")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User impact metrics retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserImpactDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content
+            )
+    })
     @GetMapping("/analytics")
     public ResponseEntity<?> getUserImpact(@RequestHeader("Authorization") String authHeader,
                                            @RequestParam(name = "period", defaultValue = "week", required = false) String period) {
