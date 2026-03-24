@@ -145,6 +145,14 @@ The Image below highlights where in the architecture this service operates.
 - Created README file to show details about the repository
 - Added Comments and Javadocs to improve readability of code
 
+**Author: Robert Rainer**
+- Added endpoints for User Impact
+  - Created endpoint to get money saved
+  - Created endpoint to get waste saved
+  - Created endpoint to get total orders
+- Added API Documentation to increase visibility of Endpoints on Swagger
+
+
 <br>
 
 **Author: Jed Leas**
